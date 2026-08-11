@@ -1,238 +1,274 @@
-/**
- * Arts of Flowers - Optimized JavaScript Engine
- * Optimizations Applied:
- * - DocumentFragment for single batch DOM injection (Eliminates layout thrashing)
- * - Native lazy loading and async decoding attributes
- * - Event Delegation for dynamic click handling
- * - Debouncing input events to lower main thread work
- */
+// ==========================================
+// 1. Initial State & Data Management
+// ==========================================
 
-(function () {
-    'use strict';
+// Sample initial catalog (We will scale this to 1,000+ items with DB next!)
+const sampleFlowers = [
+  {
+    id: 1,
+    name: "Classic Red Roses",
+    category: "Roses",
+    price: 39.99,
+    stock: 45,
+    sales: 120,
+    image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80",
+    featured: true
+  },
+  {
+    id: 2,
+    name: "Royal Pink Lilies",
+    category: "Lilies",
+    price: 45.00,
+    stock: 30,
+    sales: 85,
+    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80",
+    featured: true
+  },
+  {
+    id: 3,
+    name: "Golden Sunflower Bunch",
+    category: "Sunflowers",
+    price: 32.50,
+    stock: 60,
+    sales: 140,
+    image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80",
+    featured: true
+  },
+  {
+    id: 4,
+    name: "Purple Orchid Bliss",
+    category: "Orchids",
+    price: 52.00,
+    stock: 15,
+    sales: 62,
+    image: "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80",
+    featured: false
+  }
+];
 
-    let catalogData = [];
-    let cartItems = [];
-    let wishlistIds = new Set(); // Stores favorited product IDs
+// --- Cart Helpers ---
+function getCart() {
+  return JSON.parse(localStorage.getItem('flower_cart')) || [];
+}
 
-    // 1. Fetch JSON Data
-    async function loadData() {
-        try {
-            const res = await fetch('data.json');
-            if (!res.ok) throw new Error('Failed to fetch data.json');
-            catalogData = await res.json();
-            renderDashboard(catalogData);
-        } catch (err) {
-            console.error('Data Load Error:', err);
-            const grid = document.getElementById('flower-grid');
-            if (grid) grid.innerHTML = '<p style="color:red;">Error loading product catalog. Make sure data.json exists.</p>';
-        }
-    }
+function saveCart(cart) {
+  localStorage.setItem('flower_cart', JSON.stringify(cart));
+  updateBadges();
+}
 
-    // 2. Render Cards & Update KPIs
-    function renderDashboard(items) {
-        const grid = document.getElementById('flower-grid');
-        if (!grid) return;
+function addToCart(flowerId) {
+  const cart = getCart();
+  const flower = sampleFlowers.find(f => f.id === flowerId);
+  if (!flower) return;
 
-        updateKPIs(items);
+  const existingItem = cart.find(item => item.id === flowerId);
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({ ...flower, quantity: 1 });
+  }
 
-        grid.innerHTML = '';
-        if (items.length === 0) {
-            grid.innerHTML = '<p>No flowers matched your search criteria.</p>';
-            return;
-        }
+  saveCart(cart);
+  alert(`${flower.name} added to your cart!`);
+}
 
-        const fragment = document.createDocumentFragment();
+// --- Wishlist Helpers ---
+function getWishlist() {
+  return JSON.parse(localStorage.getItem('flower_wishlist')) || [];
+}
 
-        items.forEach((item, index) => {
-            const card = document.createElement('article');
-            card.className = 'cards';
-            card.style.position = 'relative';
+function saveWishlist(wishlist) {
+  localStorage.setItem('flower_wishlist', JSON.stringify(wishlist));
+  updateBadges();
+}
 
-            const loadingStrategy = index < 2 ? 'eager' : 'lazy';
-            const isLiked = wishlistIds.has(item.id);
+function toggleWishlist(flowerId) {
+  let wishlist = getWishlist();
+  const index = wishlist.indexOf(flowerId);
 
-            card.innerHTML = `
-                <button type="button" class="wishlist-btn" data-id="${item.id}" 
-                        style="position:absolute; top:10px; right:10px; background:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
-                    ${isLiked ? '❤️' : '🤍'}
-                </button>
-                <img src="${item.image}" 
-                     alt="${item.name}" 
-                     class="center-image" 
-                     width="240" 
-                     height="200" 
-                     loading="${loadingStrategy}" 
-                     decoding="async" 
-                     onerror="this.src='https://via.placeholder.com/240x200?text=Flower+Image'">
-                <h3 class="flower-title">${item.name}</h3>
-                <p class="flower-price">₹${item.price}</p>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:8px;">Stock: ${item.stock} | Sales: ${item.sales}</p>
-                <button type="button" class="add-to-cart" data-id="${item.id}">Add to cart</button>
-            `;
+  if (index > -1) {
+    wishlist.splice(index, 1); // Remove if already wishlisted
+  } else {
+    wishlist.push(flowerId); // Add if not in wishlist
+  }
 
-            fragment.appendChild(card);
-        });
+  saveWishlist(wishlist);
+  
+  // Re-render active page elements to reflect filled/unfilled heart
+  initHomePage();
+  initShopPage();
+}
 
-        grid.appendChild(fragment);
-    }
+// --- Navbar Badges Update ---
+function updateBadges() {
+  // Update Cart Count
+  const cart = getCart();
+  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartBadge = document.getElementById('cart-count');
+  if (cartBadge) {
+    cartBadge.textContent = totalCartCount;
+  }
 
-    // Update Top Dashboard Indicators
-    function updateKPIs(items) {
-        const totalEl = document.getElementById('kpi-total');
-        const salesEl = document.getElementById('kpi-sales');
-        const avgEl = document.getElementById('kpi-avg');
+  // Update Wishlist Count
+  const wishlist = getWishlist();
+  const wishlistBadge = document.getElementById('wishlist-count');
+  if (wishlistBadge) {
+    wishlistBadge.textContent = wishlist.length;
+  }
+}
 
-        if (totalEl) totalEl.textContent = items.length;
-        if (salesEl) {
-            const totalSales = items.reduce((sum, item) => sum + item.sales, 0);
-            salesEl.textContent = `${totalSales} units`;
-        }
-        if (avgEl) {
-            const avg = items.length ? items.reduce((sum, item) => sum + item.price, 0) / items.length : 0;
-            avgEl.textContent = `₹${Math.round(avg)}`;
-        }
-    }
 
-    // Filter & Sorting Logic
-    function applyFilterAndSort() {
-        const query = document.getElementById('search-input').value.toLowerCase().trim();
-        const sortVal = document.getElementById('sort-select').value;
+// ==========================================
+// 2. Page Specific Handlers
+// ==========================================
 
-        let filtered = catalogData.filter(item => item.name.toLowerCase().includes(query));
+// --- A. Home Page Logic (index.html) ---
+function initHomePage() {
+  const featuredGrid = document.getElementById('featured-grid');
+  if (!featuredGrid) return;
 
-        if (sortVal === 'price-low') filtered.sort((a, b) => a.price - b.price);
-        if (sortVal === 'price-high') filtered.sort((a, b) => b.price - a.price);
-        if (sortVal === 'sales-high') filtered.sort((a, b) => b.sales - a.sales);
+  const wishlist = getWishlist();
+  const featuredFlowers = sampleFlowers.filter(f => f.featured);
 
-        renderDashboard(filtered);
-    }
+  featuredGrid.innerHTML = featuredFlowers.map(flower => {
+    const isWishlisted = wishlist.includes(flower.id);
+    return `
+      <div class="flower-card">
+        <button class="wishlist-btn" onclick="toggleWishlist(${flower.id})">
+          ${isWishlisted ? '❤️' : '🤍'}
+        </button>
+        <img src="${flower.image}" alt="${flower.name}">
+        <div class="card-details">
+          <h4>${flower.name}</h4>
+          <p class="price">$${flower.price.toFixed(2)}</p>
+          <button class="btn-add-cart" onclick="addToCart(${flower.id})">Add to Cart</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
-    // Toggle Wishlist Heart
-    function toggleWishlist(productId, buttonEl) {
-        const id = Number(productId);
-        if (wishlistIds.has(id)) {
-            wishlistIds.delete(id);
-            if (buttonEl) buttonEl.textContent = '🤍';
-        } else {
-            wishlistIds.add(id);
-            if (buttonEl) buttonEl.textContent = '❤️';
-        }
-        const countEl = document.getElementById('wishlist-count');
-        if (countEl) countEl.textContent = wishlistIds.size;
-    }
+// --- B. Shop Page Logic (shop.html) ---
+function initShopPage() {
+  const shopGrid = document.getElementById('shop-grid');
+  const searchInput = document.getElementById('search-input');
+  if (!shopGrid) return;
 
-    // Add Item to Cart Array
-    function addToCart(productId) {
-        const product = catalogData.find(item => item.id === Number(productId));
-        if (product) {
-            cartItems.push(product);
-            updateCartUI();
-        }
-    }
+  function renderCatalog(items) {
+    const wishlist = getWishlist();
+    shopGrid.innerHTML = items.map(flower => {
+      const isWishlisted = wishlist.includes(flower.id);
+      return `
+        <div class="flower-card">
+          <button class="wishlist-btn" onclick="toggleWishlist(${flower.id})">
+            ${isWishlisted ? '❤️' : '🤍'}
+          </button>
+          <img src="${flower.image}" alt="${flower.name}">
+          <div class="card-details">
+            <h4>${flower.name}</h4>
+            <p class="price">$${flower.price.toFixed(2)}</p>
+            <button class="btn-add-cart" onclick="addToCart(${flower.id})">Add to Cart</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
-    // Update Cart UI Badge and Modal List
-    function updateCartUI() {
-        const counterEl = document.getElementById('cart-count');
-        if (counterEl) counterEl.textContent = cartItems.length;
+  renderCatalog(sampleFlowers);
 
-        const listEl = document.getElementById('cart-items-list');
-        const totalEl = document.getElementById('cart-total-price');
-
-        if (listEl) {
-            if (cartItems.length === 0) {
-                listEl.innerHTML = '<p>Your cart is empty.</p>';
-            } else {
-                listEl.innerHTML = cartItems.map((item, idx) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.95rem;">
-                        <span>${item.name}</span>
-                        <span>₹${item.price} <button class="remove-item" data-index="${idx}" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold; margin-left:8px;">✕</button></span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        if (totalEl) {
-            const sum = cartItems.reduce((acc, item) => acc + item.price, 0);
-            totalEl.textContent = `₹${sum}`;
-        }
-    }
-
-    // Debounce function
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    // Single Click Listener for all dynamic events
-    document.addEventListener('click', function (e) {
-        // Wishlist Heart Click
-        const wishBtn = e.target.closest('.wishlist-btn');
-        if (wishBtn) {
-            const id = wishBtn.getAttribute('data-id');
-            toggleWishlist(id, wishBtn);
-            return;
-        }
-
-        // Add to Cart Button
-        if (e.target && e.target.classList.contains('add-to-cart')) {
-            const id = e.target.getAttribute('data-id');
-            addToCart(id);
-            alert('Added item to cart!');
-            return;
-        }
-
-        // Open Cart Modal
-        if (e.target && (e.target.id === 'open-cart-btn' || e.target.closest('#open-cart-btn'))) {
-            const modal = document.getElementById('cart-modal');
-            if (modal) modal.style.display = 'flex';
-            return;
-        }
-
-        // Close Cart Modal
-        if (e.target && (e.target.id === 'close-cart' || e.target.id === 'cart-modal')) {
-            const modal = document.getElementById('cart-modal');
-            if (modal) modal.style.display = 'none';
-            return;
-        }
-
-        // Remove Item from Cart Inside Modal
-        if (e.target && e.target.classList.contains('remove-item')) {
-            const idx = e.target.getAttribute('data-index');
-            cartItems.splice(idx, 1);
-            updateCartUI();
-            return;
-        }
+  // Search Filter Handler
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = sampleFlowers.filter(f => 
+        f.name.toLowerCase().includes(query) || 
+        f.category.toLowerCase().includes(query)
+      );
+      renderCatalog(filtered);
     });
+  }
+}
 
-    // Page Initialization
-    document.addEventListener('DOMContentLoaded', () => {
-        loadData();
+// --- C. Cart Page Logic (cart.html) ---
+function initCartPage() {
+  const cartItemsContainer = document.getElementById('cart-items');
+  const cartTotalDisplay = document.getElementById('cart-total');
+  if (!cartItemsContainer) return;
 
-        const searchInput = document.getElementById('search-input');
-        const sortSelect = document.getElementById('sort-select');
+  const cart = getCart();
 
-        if (searchInput) searchInput.addEventListener('input', debounce(applyFilterAndSort, 150));
-        if (sortSelect) sortSelect.addEventListener('change', applyFilterAndSort);
+  if (cart.length === 0) {
+    cartItemsContainer.innerHTML = `<p style="text-align:center; padding: 2rem;">Your cart is currently empty.</p>`;
+    if (cartTotalDisplay) cartTotalDisplay.textContent = '0.00';
+    return;
+  }
 
-        // Checkout Form Submit
-        const checkoutForm = document.getElementById('checkout-form');
-        if (checkoutForm) {
-            checkoutForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (cartItems.length === 0) {
-                    alert('Your cart is empty!');
-                    return;
-                }
-                alert('🎉 Payment Successful! Your floral order has been placed.');
-                cartItems = [];
-                updateCartUI();
-                document.getElementById('cart-modal').style.display = 'none';
-                checkoutForm.reset();
-            });
-        }
-    });
+  let total = 0;
+  cartItemsContainer.innerHTML = cart.map(item => {
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+    return `
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+          <div>
+            <h4 style="margin:0;">${item.name}</h4>
+            <p style="margin:0; color: #666;">$${item.price.toFixed(2)} x ${item.quantity}</p>
+          </div>
+        </div>
+        <div style="font-weight: bold; color: #ba6870;">
+          $${itemTotal.toFixed(2)}
+        </div>
+      </div>
+    `;
+  }).join('');
 
-})();
+  if (cartTotalDisplay) {
+    cartTotalDisplay.textContent = total.toFixed(2);
+  }
+}
+
+// --- D. Dashboard Logic (dashboard.html) ---
+function initDashboardPage() {
+  const totalRevEl = document.getElementById('total-revenue');
+  const unitsSoldEl = document.getElementById('units-sold');
+  const avgPriceEl = document.getElementById('avg-price');
+  const tableBody = document.getElementById('table-body');
+
+  if (!tableBody) return;
+
+  let totalRevenue = 0;
+  let totalUnits = 0;
+
+  tableBody.innerHTML = sampleFlowers.map(flower => {
+    const revenue = flower.price * flower.sales;
+    totalRevenue += revenue;
+    totalUnits += flower.sales;
+
+    return `
+      <tr>
+        <td>${flower.name}</td>
+        <td>${flower.category}</td>
+        <td>$${flower.price.toFixed(2)}</td>
+        <td>${flower.stock} units</td>
+        <td>${flower.sales}</td>
+      </tr>
+    `;
+  }).join('');
+
+  if (totalRevEl) totalRevEl.textContent = `$${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  if (unitsSoldEl) unitsSoldEl.textContent = totalUnits;
+  if (avgPriceEl) avgPriceEl.textContent = `$${(totalRevenue / (totalUnits || 1)).toFixed(2)}`;
+}
+
+
+// ==========================================
+// 3. Application Initialization
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  updateBadges();
+  initHomePage();
+  initShopPage();
+  initCartPage();
+  initDashboardPage();
+});

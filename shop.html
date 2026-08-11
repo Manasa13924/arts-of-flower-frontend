@@ -3,37 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop - ARTs of Flower</title>
+  <title>Shop - ARTS OF FLOWERS</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <nav class="navbar">
-    <div class="logo">🌸 ARTs of Flower</div>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="shop.html" class="active">Shop</a></li>
-      <li><a href="cart.html">Cart (<span id="cart-count">0</span>)</a></li>
-      <li><a href="dashboard.html">Dashboard</a></li>
-    </ul>
+    <div class="nav-left">
+      <a href="shop.html" class="active">Product</a>
+      <a href="shop.html">Wishlist (<span id="wishlist-count">0</span>)</a>
+    </div>
+
+    <div class="logo">ARTS OF FLOWERS</div>
+
+    <div class="nav-right">
+      <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
   </nav>
 
   <main class="shop-container">
-    <h1>Flower Catalog</h1>
+    <h1>All Floral Arrangements</h1>
     
-    <!-- Controls: Search & Filters -->
     <div class="controls">
-      <input type="text" id="search-input" placeholder="Search flowers...">
-      <select id="sort-select">
-        <option value="default">Sort By</option>
-        <option value="price-low">Price: Low to High</option>
-        <option value="price-high">Price: High to Low</option>
-      </select>
+      <input type="text" id="search-input" placeholder="Search for your favorite flowers (e.g., Rose, Lily)...">
     </div>
 
-    <!-- Product Grid -->
     <div id="shop-grid" class="flower-grid">
-      <!-- Flower Cards loaded dynamically -->
+      <!-- Dynamic Flower Cards Load Here via flower.js -->
     </div>
   </main>
 

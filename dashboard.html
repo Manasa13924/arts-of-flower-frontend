@@ -3,49 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analytics Dashboard - ARTs of Flower</title>
+  <title>Dashboard - ARTS OF FLOWERS</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <nav class="navbar">
-    <div class="logo">🌸 ARTs of Flower (Admin)</div>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="shop.html">Shop</a></li>
-      <li><a href="cart.html">Cart</a></li>
-      <li><a href="dashboard.html" class="active">Dashboard</a></li>
-    </ul>
+    <div class="nav-left">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Product</a>
+    </div>
+
+    <div class="logo">ARTS OF FLOWERS</div>
+
+    <div class="nav-right">
+      <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+    </div>
   </nav>
 
   <main class="dashboard-container">
-    <h1>Floriculture Business Analytics</h1>
+    <h1>Store Analytics & Inventory</h1>
 
-    <!-- KPI Cards -->
     <div class="kpi-grid">
-      <div class="card"><h3>Total Revenue</h3><p id="total-revenue">$0</p></div>
-      <div class="card"><h3>Units Sold</h3><p id="units-sold">0</p></div>
-      <div class="card"><h3>Average Price</h3><p id="avg-price">$0</p></div>
+      <div class="kpi-card">
+        <h3>Total Revenue</h3>
+        <p id="total-revenue">$0.00</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Units Sold</h3>
+        <p id="units-sold">0</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Avg Item Price</h3>
+        <p id="avg-price">$0.00</p>
+      </div>
     </div>
 
-    <!-- Analytics Data Table -->
-    <section class="table-section">
-      <h2>Inventory & Performance Data</h2>
-      <table id="analytics-table">
+    <div class="table-section">
+      <h2>Inventory Overview</h2>
+      <table>
         <thead>
           <tr>
             <th>Flower Name</th>
             <th>Category</th>
             <th>Price</th>
-            <th>Stock</th>
-            <th>Sales Count</th>
+            <th>Stock Available</th>
+            <th>Total Sales</th>
           </tr>
         </thead>
         <tbody id="table-body">
-          <!-- Populated by JS -->
+          <!-- Dynamic sales/stock rows load here -->
         </tbody>
       </table>
-    </section>
+    </div>
   </main>
 
   <script src="flower.js"></script>
