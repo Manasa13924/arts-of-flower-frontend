@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "name": "Classic Red Roses",
+    "category": "Roses",
+    "price": 29.99,
+    "sales": 142,
+    "stock": 45,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/33b7d0ca-00ad-5521-8d5f-4a2824c8d303/aec8f940-3469-5597-816f-0dd903b3407c.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Mysuru Mallige Jasmine",
+    "category": "Jasmine",
+    "price": 18.99,
+    "sales": 168,
+    "stock": 35,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/6808ca67-e6b4-542f-855d-372837514354/b2d5aa91-beb6-52e1-a90e-196e68da4592.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Golden Marigold Garland",
+    "category": "Marigolds",
+    "price": 16.5,
+    "sales": 210,
+    "stock": 70,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/1b1ffbd0-6ef5-575a-90a6-315124694df6/a3f1eb53-540e-5866-a157-e9354faf631c.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Red Hibiscus Bloom",
+    "category": "Hibiscus",
+    "price": 14.99,
+    "sales": 124,
+    "stock": 42,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/0894ebba-749e-508d-9111-74c2d3c079a9/4c9b0c69-e02d-5635-a28f-9d3e53aeea0d.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Sacred White Lotus",
+    "category": "Lotus",
+    "price": 32.5,
+    "sales": 88,
+    "stock": 15,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/86193e69-7650-511f-815d-322fe71f466f/5b554988-0da3-5259-8f16-0bfef48c42f9.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Pink Bougainvillea",
+    "category": "Bougainvillea",
+    "price": 22.99,
+    "sales": 76,
+    "stock": 24,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/8236a5fb-c27c-5f7e-9be0-93f22b81d8f0/4e8e3d3d-7b9d-54cc-b045-d85cdc1083ff.jpg"
+  },
+  {
+    "id": 7,
+    "name": "White Frangipani",
+    "category": "Plumeria",
+    "price": 27.5,
+    "sales": 65,
+    "stock": 18,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/d43c9265-f2c6-55d5-9403-ccc083eed979/50dab7e3-e52e-59c3-bc9d-c578a87fd7f7.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Orange Kanakambara",
+    "category": "Crossandra",
+    "price": 21.99,
+    "sales": 93,
+    "stock": 22,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/543521d4-8f9e-5270-8955-aaa23c16f563/445a8cc3-7260-5639-a796-db4e71f57148.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Mixed Garden Zinnias",
+    "category": "Zinnias",
+    "price": 19.99,
+    "sales": 107,
+    "stock": 31,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/d738e43f-2e4e-5567-8d01-38ef44f7808c/d2af60bc-b839-50ac-a580-94b1f1850676.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Pink Cosmos Bouquet",
+    "category": "Cosmos",
+    "price": 23.5,
+    "sales": 58,
+    "stock": 19,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/eeac4475-514f-5335-90aa-ad7d8aa8a57b/594dd933-586b-5f47-a120-80cec0c8f64d.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Fragrant Tuberose",
+    "category": "Tuberose",
+    "price": 26.99,
+    "sales": 131,
+    "stock": 28,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/f65574d7-4678-50e5-bc7c-8bd2a8a64e31/4045b18b-f3d1-5779-9a21-287bb7070d8b.jpg"
+  },
+  {
+    "id": 12,
+    "name": "Indian Chrysanthemum",
+    "category": "Chrysanthemums",
+    "price": 24.99,
+    "sales": 115,
+    "stock": 34,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/dcd876fd-4ef3-574b-8a9e-1a1a4606cad9/b7748719-9d59-5efd-bf2d-bd7f63e6f857.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Purple Orchids",
+    "category": "Orchids",
+    "price": 45.0,
+    "sales": 64,
+    "stock": 8,
+    "status": "Low Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/8de87af5-0280-50ac-87cb-bd6242811de8/d8a55304-a467-51ec-833c-3bc564d15f91.jpg"
+  },
+  {
+    "id": 14,
+    "name": "White Lily Bouquet",
+    "category": "Lilies",
+    "price": 34.5,
+    "sales": 110,
+    "stock": 0,
+    "status": "Out of Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/2fc88861-174c-591a-82e2-ce90dd179a2d/7ea7fcd9-12b6-56aa-a9b5-4507fe6b2add.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Spring Tulip Mix",
+    "category": "Tulips",
+    "price": 24.99,
+    "sales": 185,
+    "stock": 60,
+    "status": "In Stock",
+    "image": "https://st.perplexity.ai/estatic/0b226c450798410ac541646c86ec31afd840e5beab817a5d84fa821e7db61981ec84c3b4a3f072a7a2e1899c9fb06c6eff57347da6ab72088a83eccfb547e35ba5b3d86baf8ce6076b605dc745a297909690390c125d499f05f4a13e7216aaf1895dc7ae40517c45a83a71e6ac98653c"
+  },
+  {
+    "id": 16,
+    "name": "Pink Peonies Deluxe",
+    "category": "Peonies",
+    "price": 49.99,
+    "sales": 76,
+    "stock": 12,
+    "status": "Low Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/9fea6a12-81d0-51a9-ad77-0ba98cf049f8/e9ff9219-1e34-5010-9d25-918e53cbad46.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Red Dahlia Cluster",
+    "category": "Dahlias",
+    "price": 31.99,
+    "sales": 69,
+    "stock": 14,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/49d0a807-c5c5-5969-b018-a8061b024a66/1da86522-94e2-50d8-ae39-fc4f08fd1c6d.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Bright Gerbera Mix",
+    "category": "Gerberas",
+    "price": 28.99,
+    "sales": 128,
+    "stock": 27,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/e449e1e0-7ca8-5125-9246-9f5d3c0daea5/dd103e4c-71d9-5573-a8cb-2a5ac6fd4cb6.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Mixed Carnations",
+    "category": "Carnations",
+    "price": 30.5,
+    "sales": 97,
+    "stock": 21,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/c480515d-8ef7-53b6-9757-0d7004f810cd/e91e73d4-022b-59db-9713-717a2a198855.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Madagascar Periwinkle",
+    "category": "Periwinkles",
+    "price": 15.99,
+    "sales": 84,
+    "stock": 40,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/305d93d4-54a4-5016-a860-4fc2e5e630ec/748365df-b0a4-50af-9356-285474510a25.jpg"
+  },
+  {
+    "id": 21,
+    "name": "Blue Morning Glory",
+    "category": "Climbers",
+    "price": 17.99,
+    "sales": 53,
+    "stock": 16,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/eb7af878-1e62-56ca-bf61-2856e41fd1f6/b2277a03-b05b-5aab-8332-02151b60078c.jpg"
+  },
+  {
+    "id": 22,
+    "name": "Gloriosa Flame Lily",
+    "category": "Lilies",
+    "price": 39.99,
+    "sales": 41,
+    "stock": 6,
+    "status": "Low Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/03c3031c-cc3c-5c5f-9fed-35d81cc3d602/ce452755-ed3f-50af-abee-e3607d7b7fa1.jpg"
+  },
+  {
+    "id": 23,
+    "name": "Red Ixora Cluster",
+    "category": "Ixora",
+    "price": 20.99,
+    "sales": 92,
+    "stock": 26,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/4b5df044-11e6-5249-8d84-9e99664ba715/758bf23c-6295-5d83-98fc-f942ec2c42b3.jpg"
+  },
+  {
+    "id": 24,
+    "name": "Pink Oleander",
+    "category": "Oleander",
+    "price": 18.5,
+    "sales": 61,
+    "stock": 17,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/1c2444a9-6354-5a22-8840-6e4fc8db55bd/32c00080-45eb-5869-9e0c-22e9c8c8ff0d.jpg"
+  },
+  {
+    "id": 25,
+    "name": "Red Canna Lily",
+    "category": "Canna Lilies",
+    "price": 25.99,
+    "sales": 48,
+    "stock": 13,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/ec5ebbc4-3828-595b-8420-ec2e87ced62f/1013dcd0-278b-591e-8252-9fb287ea5634.jpg"
+  },
+  {
+    "id": 26,
+    "name": "Moss Rose Portulaca",
+    "category": "Portulaca",
+    "price": 13.99,
+    "sales": 73,
+    "stock": 38,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/18b687a7-9d29-541e-b239-f20dc7811a55/50dab7e3-e52e-59c3-bc9d-c578a87fd7f7.jpg"
+  },
+  {
+    "id": 27,
+    "name": "Pink Pentas",
+    "category": "Pentas",
+    "price": 19.5,
+    "sales": 57,
+    "stock": 20,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/21a3ab31-2a84-58a2-b62b-5d54ba17622b/aec8f940-3469-5597-816f-0dd903b3407c.jpg"
+  },
+  {
+    "id": 28,
+    "name": "Cape Jasmine",
+    "category": "Gardenia",
+    "price": 27.99,
+    "sales": 66,
+    "stock": 11,
+    "status": "Low Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/ea9b27e2-f735-5c5e-94a0-bb4c87cf43ca/50dab7e3-e52e-59c3-bc9d-c578a87fd7f7.jpg"
+  },
+  {
+    "id": 29,
+    "name": "Red Cockscomb Celosia",
+    "category": "Celosia",
+    "price": 18.99,
+    "sales": 45,
+    "stock": 18,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/64cd4ae1-c425-5180-845d-686ace418e6f/492c7dec-34e0-5c2b-a2ad-83de0ee2b49a.jpg"
+  },
+  {
+    "id": 30,
+    "name": "Blue Butterfly Pea",
+    "category": "Clitoria",
+    "price": 16.99,
+    "sales": 39,
+    "stock": 25,
+    "status": "In Stock",
+    "image": "https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/21e80a4c-a53b-5a03-aa59-cf3cad3f6234/7ed30feb-8df1-5aa3-bb80-7b19764e1ceb.jpg"
+  }
+]
