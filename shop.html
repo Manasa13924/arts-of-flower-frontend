@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - ARTs of Flower</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">🌸 ARTs of Flower</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html" class="active">Shop</a></li>
+      <li><a href="cart.html">Cart (<span id="cart-count">0</span>)</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <main class="shop-container">
+    <h1>Flower Catalog</h1>
+    
+    <!-- Controls: Search & Filters -->
+    <div class="controls">
+      <input type="text" id="search-input" placeholder="Search flowers...">
+      <select id="sort-select">
+        <option value="default">Sort By</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+      </select>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="shop-grid" class="flower-grid">
+      <!-- Flower Cards loaded dynamically -->
+    </div>
+  </main>
+
+  <script src="flower.js"></script>
+</body>
+</html>

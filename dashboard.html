@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - ARTs of Flower</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">🌸 ARTs of Flower (Admin)</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="cart.html">Cart</a></li>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <main class="dashboard-container">
+    <h1>Floriculture Business Analytics</h1>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="card"><h3>Total Revenue</h3><p id="total-revenue">$0</p></div>
+      <div class="card"><h3>Units Sold</h3><p id="units-sold">0</p></div>
+      <div class="card"><h3>Average Price</h3><p id="avg-price">$0</p></div>
+    </div>
+
+    <!-- Analytics Data Table -->
+    <section class="table-section">
+      <h2>Inventory & Performance Data</h2>
+      <table id="analytics-table">
+        <thead>
+          <tr>
+            <th>Flower Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Sales Count</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="flower.js"></script>
+</body>
+</html>

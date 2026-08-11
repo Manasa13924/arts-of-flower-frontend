@@ -1,144 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="High-performance flower ordering catalog.">
-    <title>Arts of Flowers - Performance Optimized</title>
-
-    <!-- Performance: Resource Hints for External Asset Domains -->
-    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
-    <link rel="dns-prefetch" href="https://images.unsplash.com">
-
-    <!-- Performance: Load Minified CSS with High Priority -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Performance: Defer Non-Critical JavaScript -->
-    <script src="flower.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARTS OF FLOWERS - Handcrafted Floral Arrangements</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Font for luxury serif look -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <header role="banner">
-        <div class="logo" id="brand-logo">ARTS OF FLOWERS</div>
-        <nav role="navigation">
-            <ul class="navlink">
-                <li><a href="#dashboard-metrics">Dashboard</a></li>
-                <li><a href="#featured-section">Featured</a></li>
-                <li><a href="#catalog-section">Catalog</a></li>
-                <li>
-                    <span class="wishlist-badge" id="wishlist-badge" style="cursor:pointer;" aria-label="Wishlist Items">
-                        Wishlist (<span id="wishlist-count">0</span>)
-                    </span>
-                </li>
-                <li>
-                    <span class="cart-badge" id="open-cart-btn" style="cursor:pointer;" aria-label="Shopping Cart">
-                        Cart (<span id="cart-count">0</span>)
-                    </span>
-                </li>
-            </ul>
-        </nav>
-    </header>
-
-    <main id="main-content">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <h1>Fresh Flowers Delivered to Your Doorstep</h1>
-            <p>Express your feelings with handcrafted bouquets, fresh daily blooms, and custom floral arrangements.</p>
-            <a href="#catalog-section" class="shop-now-btn">Shop Now</a>
-        </section>
-
-        <!-- Dynamic KPI Dashboard Metrics -->
-        <section id="dashboard-metrics" class="feature-container" aria-label="Key Performance Indicators">
-            <div class="feature-card">
-                <h3>📦 Total Products</h3>
-                <p id="kpi-total" style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">0</p>
-            </div>
-            <div class="feature-card">
-                <h3>📈 Sales Volume</h3>
-                <p id="kpi-sales" style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">0 units</p>
-            </div>
-            <div class="feature-card">
-                <h3>💰 Avg Price</h3>
-                <p id="kpi-avg" style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">₹0</p>
-            </div>
-        </section>
-
-        <!-- Feature Highlights (ADDED ID HERE TO FIX FEATURED LINK) -->
-        <section class="feature-container" id="featured-section">
-            <div class="feature-card">
-                <h3>🌸 Fresh Daily</h3>
-                <p>Cut fresh from local gardens every morning.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🚚 Same-Day Delivery</h3>
-                <p>Fast, careful delivery to keep blooms fresh.</p>
-            </div>
-            <div class="feature-card">
-                <h3>🎁 Custom Arrangements</h3>
-                <p>Tailored bouquets for weddings, birthdays, or events.</p>
-            </div>
-        </section>
-
-        <!-- Search, Filter & Sorting Controls -->
-        <section class="search-section" id="catalog-section" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 20px;">
-            <div>
-                <label for="search-input">Search:</label>
-                <input type="text" id="search-input" placeholder="Type a flower name...">
-            </div>
-            <div>
-                <label for="sort-select">Sort By:</label>
-                <select id="sort-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                    <option value="default">Default</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="sales-high">Top Sales</option>
-                </select>
-            </div>
-        </section>
-
-        <!-- Dynamic Product Catalog Container -->
-        <section class="catalog-wrapper">
-            <h2 class="section-title">Our Flower Catalog</h2>
-            <div class="container" id="flower-grid" role="region" aria-live="polite">
-                <!-- Dynamically populated via flower.js -->
-            </div>
-        </section>
-    </main>
-
-    <!-- Cart & Checkout Modal -->
-    <div id="cart-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:#fff; padding:25px; border-radius:8px; max-width:450px; width:90%; max-height:80vh; overflow-y:auto; position:relative;">
-            <button id="close-cart" type="button" style="position:absolute; right:15px; top:15px; background:none; border:none; font-size:1.2rem; cursor:pointer;">✖</button>
-            <h2>Your Shopping Cart</h2>
-            <div id="cart-items-list" style="margin:20px 0;">
-                <!-- Selected items dynamically injected here -->
-            </div>
-            <hr>
-            <div style="display:flex; justify-content:space-between; margin:15px 0; font-weight:bold;">
-                <span>Total Amount:</span>
-                <span id="cart-total-price">₹0</span>
-            </div>
-            
-            <!-- Payment Section -->
-            <div id="payment-section" style="margin-top:15px;">
-                <h3>Payment Details</h3>
-                <form id="checkout-form" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-                    <input type="text" placeholder="Cardholder Name" required style="padding:8px; border:1px solid #ccc; border-radius:4px;">
-                    <input type="text" placeholder="Card Number (e.g. 4532...)" required style="padding:8px; border:1px solid #ccc; border-radius:4px;">
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" placeholder="MM/YY" required style="flex:1; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                        <input type="text" placeholder="CVV" required style="flex:1; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                    </div>
-                    <button type="submit" style="background:#2563eb; color:#fff; padding:10px; border:none; border-radius:4px; font-size:1rem; cursor:pointer; margin-top:10px;">Pay Now</button>
-                </form>
-            </div>
-        </div>
+  <!-- Centered Brand Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="shop.html">Product</a>
+      <a href="shop.html">Wishlist (<span id="wishlist-count">0</span>)</a>
     </div>
 
-    <footer role="contentinfo">
-        <p>&copy; 2026 Arts of Flowers. All rights reserved.</p>
-    </footer>
+    <div class="logo">ARTS OF FLOWERS</div>
 
+    <div class="nav-right">
+      <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Bringing Smiles, One Bloom at a Time</h1>
+    <p class="hero-subtext">Beautiful, handpicked flowers for every occasion—delivered fresh to your doorstep.</p>
+    <a href="shop.html" class="btn-shop">Shop now</a>
+  </section>
+
+  <!-- Feature Highlights -->
+  <section class="features-section">
+    <div class="feature-item">
+      <h3>🌸 Fresh Daily:</h3>
+      <p>Cut fresh from local gardens every morning.</p>
+    </div>
+    <div class="feature-item">
+      <h3>🚚 Same-Day Delivery:</h3>
+      <p>Fast, careful delivery to keep blooms fresh.</p>
+    </div>
+    <div class="feature-item">
+      <h3>🎁 Custom Arrangements:</h3>
+      <p>Tailored bouquets for weddings, birthdays, or events.</p>
+    </div>
+  </section>
+
+  <!-- Featured Bouquets -->
+  <section class="featured-section">
+    <h2 class="section-title">Our featured bouquets</h2>
+    
+    <div class="flower-grid">
+      <!-- Card 1: Red Roses -->
+      <div class="flower-card">
+        <button class="wishlist-btn">❤️</button>
+        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80" alt="Red Rose Bouquet">
+        <div class="card-details">
+          <h4>Classic Red Roses</h4>
+          <p class="price">$39.99</p>
+          <button class="btn-add-cart">Add to Cart</button>
+        </div>
+      </div>
+
+      <!-- Card 2: Pink Lilies -->
+      <div class="flower-card">
+        <button class="wishlist-btn">🤍</button>
+        <img src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80" alt="Pink Lily Bouquet">
+        <div class="card-details">
+          <h4>Royal Pink Lilies</h4>
+          <p class="price">$45.00</p>
+          <button class="btn-add-cart">Add to Cart</button>
+        </div>
+      </div>
+
+      <!-- Card 3: Sunflowers -->
+      <div class="flower-card">
+        <button class="wishlist-btn">❤️</button>
+        <img src="https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80" alt="Sunflower Bouquet">
+        <div class="card-details">
+          <h4>Golden Sunflower Bunch</h4>
+          <p class="price">$32.50</p>
+          <button class="btn-add-cart">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="flower.js"></script>
 </body>
 </html>
