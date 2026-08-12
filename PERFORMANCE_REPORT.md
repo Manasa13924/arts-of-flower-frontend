@@ -1,7 +1,7 @@
 # Front-End Performance Optimization Report
 
 ## Executive Summary
-This report documents the performance analysis, identification of bottlenecks, and optimization strategies applied to the **Arts of Flowers** web application.
+This report documents the performance analysis, identification of bottlenecks and optimization strategies applied to the **Arts of Flowers** web application.
 
 ---
 
