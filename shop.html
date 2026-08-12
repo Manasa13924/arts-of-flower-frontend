@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop - ARTS OF FLOWERS</title>
+  <title>Shop Flowers - ARTS OF FLOWERS</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -11,8 +11,9 @@
 
   <nav class="navbar">
     <div class="nav-left">
+      <a href="index.html">Home</a>
       <a href="shop.html" class="active">Product</a>
-      <a href="shop.html">Wishlist (<span id="wishlist-count">0</span>)</a>
+      <a href="wishlist.html">Wishlist (<span id="wishlist-count">0</span>)</a>
     </div>
 
     <div class="logo">ARTS OF FLOWERS</div>
@@ -24,17 +25,14 @@
   </nav>
 
   <main class="shop-container">
-    <h1>All Floral Arrangements</h1>
-    
-    <div class="controls">
-      <input type="text" id="search-input" placeholder="Search for your favorite flowers (e.g., Rose, Lily)...">
-    </div>
+    <h1>Our Flower Catalog</h1>
+    <input type="text" id="search-input" placeholder="Search flowers by name or category..." style="width: 100%; max-width: 400px; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 2rem;">
 
-    <div id="shop-grid" class="flower-grid">
-      <!-- Dynamic Flower Cards Load Here via flower.js -->
-    </div>
+    <!-- ALL CATALOG FLOWERS RENDER HERE -->
+    <div id="shop-grid" class="flower-grid"></div>
   </main>
 
+  <script src="product.js"></script>
   <script src="flower.js"></script>
 </body>
 </html>

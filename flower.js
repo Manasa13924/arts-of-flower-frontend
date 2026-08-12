@@ -1,274 +1,329 @@
 // ==========================================
-// 1. Initial State & Data Management
+// Helper: Safe Catalog Access
 // ==========================================
-
-// Sample initial catalog (We will scale this to 1,000+ items with DB next!)
-const sampleFlowers = [
-  {
-    id: 1,
-    name: "Classic Red Roses",
-    category: "Roses",
-    price: 39.99,
-    stock: 45,
-    sales: 120,
-    image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80",
-    featured: true
-  },
-  {
-    id: 2,
-    name: "Royal Pink Lilies",
-    category: "Lilies",
-    price: 45.00,
-    stock: 30,
-    sales: 85,
-    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80",
-    featured: true
-  },
-  {
-    id: 3,
-    name: "Golden Sunflower Bunch",
-    category: "Sunflowers",
-    price: 32.50,
-    stock: 60,
-    sales: 140,
-    image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80",
-    featured: true
-  },
-  {
-    id: 4,
-    name: "Purple Orchid Bliss",
-    category: "Orchids",
-    price: 52.00,
-    stock: 15,
-    sales: 62,
-    image: "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80",
-    featured: false
-  }
-];
-
-// --- Cart Helpers ---
-function getCart() {
-  return JSON.parse(localStorage.getItem('flower_cart')) || [];
+function getCatalog() {
+  if (typeof flowerCatalog !== 'undefined') return flowerCatalog;
+  if (window.flowerCatalog) return window.flowerCatalog;
+  return [];
 }
 
-function saveCart(cart) {
-  localStorage.setItem('flower_cart', JSON.stringify(cart));
-  updateBadges();
+// ==========================================
+// 1. Helpers & State Management
+// ==========================================
+let currentPage = 1;
+const itemsPerPage = 12;
+
+function getCart() { 
+  return JSON.parse(localStorage.getItem('flower_cart')) || []; 
+}
+
+function saveCart(cart) { 
+  localStorage.setItem('flower_cart', JSON.stringify(cart)); 
+  updateBadges(); 
 }
 
 function addToCart(flowerId) {
+  const catalog = getCatalog();
   const cart = getCart();
-  const flower = sampleFlowers.find(f => f.id === flowerId);
+  const flower = catalog.find(f => f.id === flowerId);
   if (!flower) return;
 
-  const existingItem = cart.find(item => item.id === flowerId);
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ ...flower, quantity: 1 });
-  }
+  const item = cart.find(i => i.id === flowerId);
+  if (item) item.quantity += 1;
+  else cart.push({ ...flower, quantity: 1 });
 
   saveCart(cart);
   alert(`${flower.name} added to your cart!`);
 }
 
-// --- Wishlist Helpers ---
-function getWishlist() {
-  return JSON.parse(localStorage.getItem('flower_wishlist')) || [];
+function getWishlist() { 
+  return JSON.parse(localStorage.getItem('flower_wishlist')) || []; 
 }
 
-function saveWishlist(wishlist) {
-  localStorage.setItem('flower_wishlist', JSON.stringify(wishlist));
-  updateBadges();
+function saveWishlist(wishlist) { 
+  localStorage.setItem('flower_wishlist', JSON.stringify(wishlist)); 
+  updateBadges(); 
 }
 
-function toggleWishlist(flowerId) {
+function toggleWishlist(flowerId, event) {
+  if (event) event.stopPropagation();
   let wishlist = getWishlist();
-  const index = wishlist.indexOf(flowerId);
-
-  if (index > -1) {
-    wishlist.splice(index, 1); // Remove if already wishlisted
-  } else {
-    wishlist.push(flowerId); // Add if not in wishlist
-  }
-
-  saveWishlist(wishlist);
+  const idx = wishlist.indexOf(flowerId);
+  if (idx > -1) wishlist.splice(idx, 1);
+  else wishlist.push(flowerId);
   
-  // Re-render active page elements to reflect filled/unfilled heart
-  initHomePage();
+  saveWishlist(wishlist);
+  updateHomeWishlistHearts();
   initShopPage();
+  initWishlistPage();
 }
 
-// --- Navbar Badges Update ---
 function updateBadges() {
-  // Update Cart Count
   const cart = getCart();
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const cartBadge = document.getElementById('cart-count');
-  if (cartBadge) {
-    cartBadge.textContent = totalCartCount;
-  }
-
-  // Update Wishlist Count
   const wishlist = getWishlist();
-  const wishlistBadge = document.getElementById('wishlist-count');
-  if (wishlistBadge) {
-    wishlistBadge.textContent = wishlist.length;
-  }
+  const cBadge = document.getElementById('cart-count');
+  const wBadge = document.getElementById('wishlist-count');
+  if (cBadge) cBadge.textContent = cart.reduce((s, i) => s + i.quantity, 0);
+  if (wBadge) wBadge.textContent = wishlist.length;
 }
 
-
-// ==========================================
-// 2. Page Specific Handlers
-// ==========================================
-
-// --- A. Home Page Logic (index.html) ---
-function initHomePage() {
-  const featuredGrid = document.getElementById('featured-grid');
-  if (!featuredGrid) return;
-
+function updateHomeWishlistHearts() {
   const wishlist = getWishlist();
-  const featuredFlowers = sampleFlowers.filter(f => f.featured);
+  [1, 2, 3].forEach(id => {
+    const btn = document.getElementById(`wish-btn-${id}`);
+    if (btn) btn.textContent = wishlist.includes(id) ? '❤️' : '🤍';
+  });
+}
 
-  featuredGrid.innerHTML = featuredFlowers.map(flower => {
-    const isWishlisted = wishlist.includes(flower.id);
-    return `
-      <div class="flower-card">
-        <button class="wishlist-btn" onclick="toggleWishlist(${flower.id})">
-          ${isWishlisted ? '❤️' : '🤍'}
-        </button>
-        <img src="${flower.image}" alt="${flower.name}">
+// ==========================================
+// 2. Product Detail Modal
+// ==========================================
+function openProductModal(flowerId) {
+  const catalog = getCatalog();
+  const flower = catalog.find(f => f.id === flowerId);
+  if (!flower) return;
+
+  let modal = document.getElementById('product-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'product-modal';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeProductModal()">×</button>
+      <img class="modal-img" src="${flower.image}" alt="${flower.name}">
+      <div class="modal-body">
+        <h2 style="font-family:'Playfair Display', serif; margin-bottom:0.5rem;">${flower.name}</h2>
+        <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating} (${flower.reviewsCount} reviews)</p>
+        <p style="font-size:1.3rem; font-weight:600; color:#ba6870; margin-bottom:1rem;">$${flower.price.toFixed(2)}</p>
+        <p style="color:#666; font-size:0.9rem; margin-bottom:1.5rem; line-height:1.5;">${flower.description}</p>
+        <button class="btn-primary" onclick="addToCart(${flower.id}); closeProductModal();">Add to Cart</button>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeProductModal() {
+  const modal = document.getElementById('product-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+// ==========================================
+// 3. Page Logic Handlers
+// ==========================================
+
+// --- Shop Page ---
+function initShopPage() {
+  const grid = document.getElementById('shop-grid');
+  const searchInput = document.getElementById('search-input');
+  if (!grid) return;
+
+  const catalog = getCatalog();
+  if (!catalog || catalog.length === 0) {
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">No products found in catalog.</p>`;
+    return;
+  }
+
+  let activeList = [...catalog];
+
+  function renderPage(page) {
+    currentPage = page;
+    const wishlist = getWishlist();
+    const start = (page - 1) * itemsPerPage;
+    const paginatedItems = activeList.slice(start, start + itemsPerPage);
+
+    grid.innerHTML = paginatedItems.map(f => `
+      <div class="flower-card" onclick="openProductModal(${f.id})">
+        <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">${wishlist.includes(f.id) ? '❤️' : '🤍'}</button>
+        <img src="${f.image}" alt="${f.name}">
         <div class="card-details">
-          <h4>${flower.name}</h4>
-          <p class="price">$${flower.price.toFixed(2)}</p>
-          <button class="btn-add-cart" onclick="addToCart(${flower.id})">Add to Cart</button>
+          <h4>${f.name}</h4>
+          <p class="price">$${f.price.toFixed(2)} ${f.originalPrice ? `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem;">$${f.originalPrice.toFixed(2)}</span>` : ''}</p>
+          <p style="font-size:0.85rem; color:#f39c12;">⭐ ${f.rating || 5} (${f.reviewsCount || 10} reviews)</p>
+          <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${f.id})">Add to Cart</button>
         </div>
       </div>
-    `;
-  }).join('');
-}
+    `).join('');
 
-// --- B. Shop Page Logic (shop.html) ---
-function initShopPage() {
-  const shopGrid = document.getElementById('shop-grid');
-  const searchInput = document.getElementById('search-input');
-  if (!shopGrid) return;
-
-  function renderCatalog(items) {
-    const wishlist = getWishlist();
-    shopGrid.innerHTML = items.map(flower => {
-      const isWishlisted = wishlist.includes(flower.id);
-      return `
-        <div class="flower-card">
-          <button class="wishlist-btn" onclick="toggleWishlist(${flower.id})">
-            ${isWishlisted ? '❤️' : '🤍'}
-          </button>
-          <img src="${flower.image}" alt="${flower.name}">
-          <div class="card-details">
-            <h4>${flower.name}</h4>
-            <p class="price">$${flower.price.toFixed(2)}</p>
-            <button class="btn-add-cart" onclick="addToCart(${flower.id})">Add to Cart</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+    renderPaginationControls();
   }
 
-  renderCatalog(sampleFlowers);
+  function renderPaginationControls() {
+    let paginationContainer = document.getElementById('pagination-container');
+    if (!paginationContainer) {
+      paginationContainer = document.createElement('div');
+      paginationContainer.id = 'pagination-container';
+      paginationContainer.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-top:30px; grid-column: 1 / -1;';
+      grid.parentNode.appendChild(paginationContainer);
+    }
 
-  // Search Filter Handler
+    const totalPages = Math.ceil(activeList.length / itemsPerPage) || 1;
+    paginationContainer.innerHTML = `
+      <button class="btn-add-cart" ${currentPage === 1 ? 'disabled style="opacity:0.5"' : ''} onclick="changePage(${currentPage - 1})">Previous</button>
+      <span style="align-self:center; font-weight:500;">Page ${currentPage} of ${totalPages} (Total ${activeList.length} Flowers)</span>
+      <button class="btn-add-cart" ${currentPage === totalPages ? 'disabled style="opacity:0.5"' : ''} onclick="changePage(${currentPage + 1})">Next</button>
+    `;
+  }
+
+  window.changePage = function(newPage) {
+    const totalPages = Math.ceil(activeList.length / itemsPerPage) || 1;
+    if (newPage >= 1 && newPage <= totalPages) {
+      renderPage(newPage);
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+  };
+
+  renderPage(1);
+
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
-      const filtered = sampleFlowers.filter(f => 
-        f.name.toLowerCase().includes(query) || 
-        f.category.toLowerCase().includes(query)
-      );
-      renderCatalog(filtered);
+      const q = e.target.value.toLowerCase();
+      activeList = catalog.filter(f => f.name.toLowerCase().includes(q) || (f.category && f.category.toLowerCase().includes(q)));
+      renderPage(1);
     });
   }
 }
 
-// --- C. Cart Page Logic (cart.html) ---
+// --- Wishlist Page ---
+function initWishlistPage() {
+  const grid = document.getElementById('wishlist-grid');
+  if (!grid) return;
+
+  const wishlistIds = getWishlist();
+  const catalog = getCatalog();
+  const wishlistedFlowers = catalog.filter(f => wishlistIds.includes(f.id));
+
+  if (wishlistedFlowers.length === 0) {
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Your wishlist is currently empty. Click ❤️ on any flower to save it here!</p>`;
+    return;
+  }
+
+  grid.innerHTML = wishlistedFlowers.map(f => `
+    <div class="flower-card" onclick="openProductModal(${f.id})">
+      <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">❤️</button>
+      <img src="${f.image}" alt="${f.name}">
+      <div class="card-details">
+        <h4>${f.name}</h4>
+        <p class="price">$${f.price.toFixed(2)}</p>
+        <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${f.id})">Add to Cart</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- Cart Page ---
 function initCartPage() {
-  const cartItemsContainer = document.getElementById('cart-items');
-  const cartTotalDisplay = document.getElementById('cart-total');
-  if (!cartItemsContainer) return;
+  const container = document.getElementById('cart-items');
+  const totalDisplay = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (!container) return;
 
   const cart = getCart();
-
   if (cart.length === 0) {
-    cartItemsContainer.innerHTML = `<p style="text-align:center; padding: 2rem;">Your cart is currently empty.</p>`;
-    if (cartTotalDisplay) cartTotalDisplay.textContent = '0.00';
+    container.innerHTML = `<p style="text-align:center; padding: 2rem;">Your cart is empty.</p>`;
+    if (totalDisplay) totalDisplay.textContent = '0.00';
+    if (checkoutBtn) checkoutBtn.style.display = 'none';
     return;
   }
 
   let total = 0;
-  cartItemsContainer.innerHTML = cart.map(item => {
-    const itemTotal = item.price * item.quantity;
-    total += itemTotal;
+  container.innerHTML = cart.map(item => {
+    const sub = item.price * item.quantity;
+    total += sub;
     return `
-      <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding:1rem; background:white; border-radius:8px;">
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;">
           <div>
             <h4 style="margin:0;">${item.name}</h4>
-            <p style="margin:0; color: #666;">$${item.price.toFixed(2)} x ${item.quantity}</p>
+            <p style="margin:0; color:#666;">$${item.price.toFixed(2)} x ${item.quantity}</p>
           </div>
         </div>
-        <div style="font-weight: bold; color: #ba6870;">
-          $${itemTotal.toFixed(2)}
-        </div>
+        <div style="font-weight:bold; color:#ba6870;">$${sub.toFixed(2)}</div>
       </div>
     `;
   }).join('');
 
-  if (cartTotalDisplay) {
-    cartTotalDisplay.textContent = total.toFixed(2);
-  }
+  if (totalDisplay) totalDisplay.textContent = total.toFixed(2);
 }
 
-// --- D. Dashboard Logic (dashboard.html) ---
-function initDashboardPage() {
-  const totalRevEl = document.getElementById('total-revenue');
-  const unitsSoldEl = document.getElementById('units-sold');
-  const avgPriceEl = document.getElementById('avg-price');
-  const tableBody = document.getElementById('table-body');
+// --- Checkout Page ---
+function initCheckoutPage() {
+  const summaryBox = document.getElementById('checkout-summary-items');
+  const totalEl = document.getElementById('checkout-total');
+  if (!summaryBox) return;
 
+  const cart = getCart();
+  let total = 0;
+
+  summaryBox.innerHTML = cart.map(item => {
+    const sub = item.price * item.quantity;
+    total += sub;
+    return `
+      <div style="display:flex; justify-content:space-between; margin-bottom:0.8rem; font-size:0.9rem;">
+        <span>${item.name} (x${item.quantity})</span>
+        <span style="font-weight:600;">$${sub.toFixed(2)}</span>
+      </div>
+    `;
+  }).join('');
+
+  if (totalEl) totalEl.textContent = total.toFixed(2);
+}
+
+function processOrder(e) {
+  e.preventDefault();
+  alert('Thank you for your order! Your blooms are on their way! 🌸');
+  localStorage.removeItem('flower_cart');
+  window.location.href = 'index.html';
+}
+
+// --- Dashboard Page ---
+function initDashboardPage() {
+  const tableBody = document.getElementById('table-body');
   if (!tableBody) return;
 
-  let totalRevenue = 0;
-  let totalUnits = 0;
+  const catalog = getCatalog();
+  let totalRev = 0, totalUnits = 0;
 
-  tableBody.innerHTML = sampleFlowers.map(flower => {
-    const revenue = flower.price * flower.sales;
-    totalRevenue += revenue;
-    totalUnits += flower.sales;
-
+  tableBody.innerHTML = catalog.slice(0, 50).map(f => {
+    const sales = f.sales || 0;
+    const rev = f.price * sales;
+    totalRev += rev;
+    totalUnits += sales;
     return `
       <tr>
-        <td>${flower.name}</td>
-        <td>${flower.category}</td>
-        <td>$${flower.price.toFixed(2)}</td>
-        <td>${flower.stock} units</td>
-        <td>${flower.sales}</td>
+        <td>${f.name}</td>
+        <td>${f.category || 'N/A'}</td>
+        <td>$${f.price.toFixed(2)}</td>
+        <td>${f.stock || 0} units</td>
+        <td>${sales}</td>
       </tr>
     `;
   }).join('');
 
-  if (totalRevEl) totalRevEl.textContent = `$${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-  if (unitsSoldEl) unitsSoldEl.textContent = totalUnits;
-  if (avgPriceEl) avgPriceEl.textContent = `$${(totalRevenue / (totalUnits || 1)).toFixed(2)}`;
+  const revEl = document.getElementById('total-revenue');
+  const unitsEl = document.getElementById('units-sold');
+  const avgEl = document.getElementById('avg-price');
+
+  if (revEl) revEl.textContent = `$${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  if (unitsEl) unitsEl.textContent = totalUnits;
+  if (avgEl) avgEl.textContent = `$${(totalRev / (totalUnits || 1)).toFixed(2)}`;
 }
 
-
 // ==========================================
-// 3. Application Initialization
+// Initialization
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   updateBadges();
-  initHomePage();
+  updateHomeWishlistHearts();
   initShopPage();
+  initWishlistPage();
   initCartPage();
+  initCheckoutPage();
   initDashboardPage();
 });

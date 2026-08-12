@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - ARTS OF FLOWERS</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Product</a>
+    </div>
+
+    <div class="logo">ARTS OF FLOWERS</div>
+
+    <div class="nav-right">
+      <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="cart-container">
+    <h1>Checkout & Payment</h1>
+
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
+      <!-- Address & Payment Form -->
+      <form id="checkout-form" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);" onsubmit="processOrder(event)">
+        <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Shipping Details</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:500;">First Name</label>
+            <input type="text" required placeholder="John" style="width:100%; padding:0.7rem; border:1px solid #ebdcd5; border-radius:6px; margin-top:0.3rem;">
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:500;">Last Name</label>
+            <input type="text" required placeholder="Doe" style="width:100%; padding:0.7rem; border:1px solid #ebdcd5; border-radius:6px; margin-top:0.3rem;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size:0.85rem; font-weight:500;">Delivery Address</label>
+          <input type="text" required placeholder="123 Floral St, Suite 4" style="width:100%; padding:0.7rem; border:1px solid #ebdcd5; border-radius:6px; margin-top:0.3rem;">
+        </div>
+
+        <h2 style="font-family: 'Playfair Display', serif; margin: 1.5rem 0 1rem 0;">Payment Method</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <label><input type="radio" name="payment" value="card" checked> Credit/Debit Card</label>
+          <label><input type="radio" name="payment" value="upi"> UPI / NetBanking</label>
+          <label><input type="radio" name="payment" value="cod"> Cash on Delivery</label>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1rem;">Place Order Now</button>
+      </form>
+
+      <!-- Order Summary Card -->
+      <div style="background: white; padding: 2rem; border-radius: 12px; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+        <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 1rem;">Order Summary</h3>
+        <div id="checkout-summary-items" style="margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+          <!-- Item list -->
+        </div>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1rem 0;">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; color: #1a2530;">
+          <span>Total:</span>
+          <span>$<span id="checkout-total">0.00</span></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="product.js"></script>
+  <script src="flower.js"></script>
+</body>
+</html>

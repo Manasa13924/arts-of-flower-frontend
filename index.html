@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARTS OF FLOWERS - Handcrafted Floral Arrangements</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Google Font for luxury serif look -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Centered Brand Navigation Bar -->
+  <!-- Navigation Bar -->
   <nav class="navbar">
     <div class="nav-left">
+      <a href="index.html" class="active">Home</a>
       <a href="shop.html">Product</a>
-      <a href="shop.html">Wishlist (<span id="wishlist-count">0</span>)</a>
+      <a href="wishlist.html">Wishlist (<span id="wishlist-count">0</span>)</a>
     </div>
 
     <div class="logo">ARTS OF FLOWERS</div>
@@ -53,41 +53,42 @@
     <h2 class="section-title">Our featured bouquets</h2>
     
     <div class="flower-grid">
-      <!-- Card 1: Red Roses -->
-      <div class="flower-card">
-        <button class="wishlist-btn">❤️</button>
+      <!-- Card 1: Red Roses (ID: 1) -->
+      <div class="flower-card" onclick="openProductModal(1)">
+        <button class="wishlist-btn" id="wish-btn-1" onclick="toggleWishlist(1, event)">🤍</button>
         <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80" alt="Red Rose Bouquet">
         <div class="card-details">
           <h4>Classic Red Roses</h4>
           <p class="price">$39.99</p>
-          <button class="btn-add-cart">Add to Cart</button>
+          <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(1)">Add to Cart</button>
         </div>
       </div>
 
-      <!-- Card 2: Pink Lilies -->
-      <div class="flower-card">
-        <button class="wishlist-btn">🤍</button>
+      <!-- Card 2: Pink Lilies (ID: 2) -->
+      <div class="flower-card" onclick="openProductModal(2)">
+        <button class="wishlist-btn" id="wish-btn-2" onclick="toggleWishlist(2, event)">🤍</button>
         <img src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80" alt="Pink Lily Bouquet">
         <div class="card-details">
           <h4>Royal Pink Lilies</h4>
           <p class="price">$45.00</p>
-          <button class="btn-add-cart">Add to Cart</button>
+          <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(2)">Add to Cart</button>
         </div>
       </div>
 
-      <!-- Card 3: Sunflowers -->
-      <div class="flower-card">
-        <button class="wishlist-btn">❤️</button>
+      <!-- Card 3: Sunflowers (ID: 3) -->
+      <div class="flower-card" onclick="openProductModal(3)">
+        <button class="wishlist-btn" id="wish-btn-3" onclick="toggleWishlist(3, event)">🤍</button>
         <img src="https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80" alt="Sunflower Bouquet">
         <div class="card-details">
           <h4>Golden Sunflower Bunch</h4>
           <p class="price">$32.50</p>
-          <button class="btn-add-cart">Add to Cart</button>
+          <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(3)">Add to Cart</button>
         </div>
       </div>
     </div>
   </section>
 
+  <script src="product.js"></script>
   <script src="flower.js"></script>
 </body>
 </html>
