@@ -1,5 +1,5 @@
 // ==========================================
-// Helper: Safe Catalog Access
+// Safe Catalog Access Helper
 // ==========================================
 function getCatalog() {
   if (typeof flowerCatalog !== 'undefined') return flowerCatalog;
@@ -22,20 +22,6 @@ function saveCart(cart) {
   updateBadges(); 
 }
 
-function addToCart(flowerId) {
-  const catalog = getCatalog();
-  const cart = getCart();
-  const flower = catalog.find(f => f.id === flowerId);
-  if (!flower) return;
-
-  const item = cart.find(i => i.id === flowerId);
-  if (item) item.quantity += 1;
-  else cart.push({ ...flower, quantity: 1 });
-
-  saveCart(cart);
-  alert(`${flower.name} added to your cart!`);
-}
-
 function getWishlist() { 
   return JSON.parse(localStorage.getItem('flower_wishlist')) || []; 
 }
@@ -43,6 +29,46 @@ function getWishlist() {
 function saveWishlist(wishlist) { 
   localStorage.setItem('flower_wishlist', JSON.stringify(wishlist)); 
   updateBadges(); 
+}
+
+function getOrderHistory() {
+  return JSON.parse(localStorage.getItem('flower_order_history')) || [];
+}
+
+// Add to Cart with "Proceed to Payment?" Prompt
+function handleAddToCart(flowerId, event) {
+  if (event) event.stopPropagation(); // Stop click from triggering modal image popup
+  
+  const catalog = getCatalog();
+  const cart = getCart();
+  const flower = catalog.find(f => f.id === flowerId);
+  if (!flower) return;
+
+  // Add item to cart
+  const item = cart.find(i => i.id === flowerId);
+  if (item) item.quantity += 1;
+  else cart.push({ ...flower, quantity: 1 });
+
+  saveCart(cart);
+
+  // Ask user if they want to proceed to payment right now
+  const proceed = confirm(`"${flower.name}" added to cart!\n\nDo you want to proceed to payment now?`);
+  
+  if (proceed) {
+    window.location.href = 'cart.html'; // Direct to Cart page for payment
+  }
+}
+
+// "Buy Again" prompt when clicking a past purchase name in Cart
+function buyAgainPrompt(flowerId) {
+  const catalog = getCatalog();
+  const flower = catalog.find(f => f.id === flowerId);
+  if (!flower) return;
+
+  const confirmBuy = confirm(`Do you want to buy "${flower.name}" again?`);
+  if (confirmBuy) {
+    handleAddToCart(flowerId);
+  }
 }
 
 function toggleWishlist(flowerId, event) {
@@ -69,14 +95,33 @@ function updateBadges() {
 
 function updateHomeWishlistHearts() {
   const wishlist = getWishlist();
+  
+  // 1. Update Wishlist Hearts on Home Page
   [1, 2, 3].forEach(id => {
     const btn = document.getElementById(`wish-btn-${id}`);
     if (btn) btn.textContent = wishlist.includes(id) ? '❤️' : '🤍';
   });
+
+  // 2. Attach Click Handlers to Home Page Cards & "Add to Cart" Buttons
+  const catalog = getCatalog();
+  [1, 2, 3].forEach(id => {
+    // Make home page images open the detail popup
+    const imgEl = document.querySelector(`#featured-${id} img, [data-home-id="${id}"] img`);
+    if (imgEl) {
+      imgEl.style.cursor = 'pointer';
+      imgEl.onclick = () => openProductModal(id);
+    }
+
+    // Attach handleAddToCart to home page "Add to Cart" buttons
+    const cartBtn = document.querySelector(`#home-cart-btn-${id}, [onclick*="addToCart(${id})"]`);
+    if (cartBtn) {
+      cartBtn.onclick = (e) => handleAddToCart(id, e);
+    }
+  });
 }
 
 // ==========================================
-// 2. Product Detail Modal
+// 2. Detailed Flower Info Modal (Triggers when Image is clicked)
 // ==========================================
 function openProductModal(flowerId) {
   const catalog = getCatalog();
@@ -97,10 +142,12 @@ function openProductModal(flowerId) {
       <img class="modal-img" src="${flower.image}" alt="${flower.name}">
       <div class="modal-body">
         <h2 style="font-family:'Playfair Display', serif; margin-bottom:0.5rem;">${flower.name}</h2>
-        <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating} (${flower.reviewsCount} reviews)</p>
+        <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating || 5} (${flower.reviewsCount || 10} reviews)</p>
         <p style="font-size:1.3rem; font-weight:600; color:#ba6870; margin-bottom:1rem;">$${flower.price.toFixed(2)}</p>
-        <p style="color:#666; font-size:0.9rem; margin-bottom:1.5rem; line-height:1.5;">${flower.description}</p>
-        <button class="btn-primary" onclick="addToCart(${flower.id}); closeProductModal();">Add to Cart</button>
+        <p style="color:#666; font-size:0.95rem; margin-bottom:1.5rem; line-height:1.6;">
+          ${flower.description || 'Freshly handpicked blooms prepared with care. Perfect for gifts, occasions, or adding a vibrant touch to your home.'}
+        </p>
+        <button class="btn-primary" onclick="handleAddToCart(${flower.id}); closeProductModal();">Add to Cart</button>
       </div>
     </div>
   `;
@@ -140,12 +187,12 @@ function initShopPage() {
     grid.innerHTML = paginatedItems.map(f => `
       <div class="flower-card" onclick="openProductModal(${f.id})">
         <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">${wishlist.includes(f.id) ? '❤️' : '🤍'}</button>
-        <img src="${f.image}" alt="${f.name}">
+        <img src="${f.image}" alt="${f.name}" title="Click to view detailed info">
         <div class="card-details">
           <h4>${f.name}</h4>
           <p class="price">$${f.price.toFixed(2)} ${f.originalPrice ? `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem;">$${f.originalPrice.toFixed(2)}</span>` : ''}</p>
           <p style="font-size:0.85rem; color:#f39c12;">⭐ ${f.rating || 5} (${f.reviewsCount || 10} reviews)</p>
-          <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${f.id})">Add to Cart</button>
+          <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
         </div>
       </div>
     `).join('');
@@ -210,7 +257,7 @@ function initWishlistPage() {
       <div class="card-details">
         <h4>${f.name}</h4>
         <p class="price">$${f.price.toFixed(2)}</p>
-        <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${f.id})">Add to Cart</button>
+        <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
       </div>
     </div>
   `).join('');
@@ -219,13 +266,42 @@ function initWishlistPage() {
 // --- Cart Page ---
 function initCartPage() {
   const container = document.getElementById('cart-items');
+  const summaryBox = document.getElementById('purchased-summary');
   const totalDisplay = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
-  if (!container) return;
 
+  // 1. Render Past Purchased Summary
+  if (summaryBox) {
+    const history = getOrderHistory();
+    if (history.length === 0) {
+      summaryBox.innerHTML = `<p style="color:#888; font-style:italic;">No past purchases yet.</p>`;
+    } else {
+      summaryBox.innerHTML = `
+        <div style="background: #fff8f8; border: 1px solid #f1c40f; border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
+          <h3 style="margin-top:0; color:#ba6870;">🌸 Your Past Purchases Summary</h3>
+          <ul style="list-style:none; padding:0; margin:0;">
+            ${history.map(item => `
+              <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
+                <span 
+                  onclick="buyAgainPrompt(${item.id})" 
+                  style="cursor:pointer; color:#ba6870; font-weight:600; text-decoration:underline;"
+                  title="Click to buy again">
+                  ${item.name}
+                </span>
+                <span>Qty: ${item.quantity} | Total: $${(item.price * item.quantity).toFixed(2)}</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+    }
+  }
+
+  // 2. Render Active Cart Items
+  if (!container) return;
   const cart = getCart();
   if (cart.length === 0) {
-    container.innerHTML = `<p style="text-align:center; padding: 2rem;">Your cart is empty.</p>`;
+    container.innerHTML = `<p style="text-align:center; padding: 2rem;">Your active cart is empty.</p>`;
     if (totalDisplay) totalDisplay.textContent = '0.00';
     if (checkoutBtn) checkoutBtn.style.display = 'none';
     return;
@@ -275,10 +351,27 @@ function initCheckoutPage() {
   if (totalEl) totalEl.textContent = total.toFixed(2);
 }
 
+// Complete Order & Move Active Items to History
 function processOrder(e) {
-  e.preventDefault();
-  alert('Thank you for your order! Your blooms are on their way! 🌸');
+  if (e) e.preventDefault();
+  const cart = getCart();
+  if (cart.length === 0) return alert('Your cart is empty!');
+
+  // Move items to order history
+  const history = getOrderHistory();
+  cart.forEach(item => {
+    const existing = history.find(h => h.id === item.id);
+    if (existing) {
+      existing.quantity += item.quantity;
+    } else {
+      history.push({ ...item });
+    }
+  });
+
+  localStorage.setItem('flower_order_history', JSON.stringify(history));
   localStorage.removeItem('flower_cart');
+
+  alert('Thank you for your order! Your blooms are on their way! 🌸');
   window.location.href = 'index.html';
 }
 

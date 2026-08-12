@@ -1,110 +1,46 @@
-// ===================================================
-// ARTS OF FLOWERS - 1,000+ Product Catalog Generator
-// ===================================================
-window.flowerCatalog = [
-  {
-    id: 1,
-    name: "Classic Red Roses",
-    category: "Roses",
-    price: 39.99,
-    originalPrice: 49.99,
-    rating: 4.8,
-    reviewsCount: 124,
-    stock: 50,
-    sales: 210,
-    featured: true,
-    description: "A timeless arrangement of premium long-stemmed red roses.",
-    image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80"
-  },
-  {
-    id: 2,
-    name: "Royal Pink Lilies",
-    category: "Lilies",
-    price: 45.00,
-    originalPrice: 55.00,
-    rating: 4.7,
-    reviewsCount: 89,
-    stock: 35,
-    sales: 140,
-    featured: true,
-    description: "Elegant pink lilies that bring fresh fragrance and vibrancy.",
-    image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80"
-  },
-  {
-    id: 3,
-    name: "Golden Sunflower Bunch",
-    category: "Sunflowers",
-    price: 32.50,
-    originalPrice: 40.00,
-    rating: 4.9,
-    reviewsCount: 156,
-    stock: 60,
-    sales: 310,
-    featured: true,
-    description: "Bright yellow sunflowers guaranteed to lift anyone's day.",
-    image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80"
-  }
-];
-const flowerNamesPrefixes = [
-  "Royal", "Classic", "Exotic", "Blush", "Golden", "Midnight", "Velvet", 
-  "Celestial", "Rustic", "Pastel", "Enchanted", "Imperial", "Sweet", 
-  "Majestic", "Serene", "Vintage", "Tropical", "Blooming", "Radiant", "Pure"
+// Local and international flower base data
+const baseFlowerTypes = [
+  { name: "Marigold (Genda)", category: "Local", price: 12.99, image: "https://images.unsplash.com/photo-1598880940080-ff9a29891b85?w=500", desc: "Vibrant yellow and orange marigolds essential for festive celebrations and garlands." },
+  { name: "Jasmine (Mogra)", category: "Local", price: 18.50, image: "https://images.unsplash.com/photo-1592729645009-b96d1e63d14b?w=500", desc: "Sweet-scented fresh white Jasmine blooms for traditional adornment." },
+  { name: "Hibiscus (Gudhal)", category: "Local", price: 14.00, image: "https://images.unsplash.com/photo-1550950158-d0d960dff51b?w=500", desc: "Bold tropical hibiscus petals perfect for offerings and home decor." },
+  { name: "Lotus (Kamal)", category: "Local", price: 24.99, image: "https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=500", desc: "Pure and serene lotus flowers sourced from fresh water ponds." },
+  { name: "Tuberose (Rajnigandha)", category: "Local", price: 19.99, image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500", desc: "Fragrant white flower spikes with an intoxicating evening scent." },
+  { name: "Rose", category: "Roses", price: 22.00, image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500", desc: "Classic fresh long-stem roses." },
+  { name: "Sunflower", category: "Seasonal", price: 16.50, image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500", desc: "Bright golden sunflowers bringing warmth and joy." },
+  { name: "Tulip", category: "Imported", price: 26.00, image: "https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500", desc: "Elegant spring tulips hand-picked from top growers." },
+  { name: "Orchid", category: "Exotic", price: 31.00, image: "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500", desc: "Exotic long-lasting orchids with striking color depth." },
+  { name: "Lily", category: "Lilies", price: 27.50, image: "https://images.unsplash.com/photo-1508784411316-02b8cd4d3a3a?w=500", desc: "Fragrant, peaceful lily blooms." }
 ];
 
-const flowerTypes = [
-  { name: "Roses", image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80" },
-  { name: "Lilies", image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&q=80" },
-  { name: "Sunflowers", image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&q=80" },
-  { name: "Orchids", image: "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80" },
-  { name: "Tulips", image: "https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&q=80" },
-  { name: "Carnations", image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&q=80" },
-  { name: "Daisies", image: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=500&q=80" },
-  { name: "Peonies", image: "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500&q=80" }
-];
+const prefixes = ["Royal", "Fresh", "Golden", "Blossom", "Deluxe", "Imperial", "Wild", "Garden", "Sacred", "Sunlit"];
+const variations = ["Bouquet", "Garland", "Arrangement", "Single Stem", "Gift Box", "Basket", "Vase Special"];
 
-const styles = [
-  "Bouquet in Kraft Wrap", "Deluxe Vase Arrangement", "Glass Jar Bunch", 
-  "Gift Box Edition", "Woven Basket Meadow", "Satin Tied Bundle", "Velvet Box Special"
-];
-
-const badgesList = ["Bestseller", "Sale", "Top Rated", "Trending", "Limited", ""];
-
-// Function to generate 1,000 distinct flower items
-function generate1000Flowers() {
+function generateLargeCatalog(targetCount = 1000) {
   const catalog = [];
-
-  for (let i = 1; i <= 1000; i++) {
-    const prefix = flowerNamesPrefixes[i % flowerNamesPrefixes.length];
-    const typeObj = flowerTypes[i % flowerTypes.length];
-    const style = styles[i % styles.length];
+  
+  for (let i = 1; i <= targetCount; i++) {
+    const base = baseFlowerTypes[(i - 1) % baseFlowerTypes.length];
+    const prefix = prefixes[(i - 1) % prefixes.length];
+    const variation = variations[(i - 1) % variations.length];
     
-    const price = +(19.99 + ((i * 3.7) % 80)).toFixed(2);
-    const originalPrice = +(price * 1.25).toFixed(2);
-    const rating = +(4.0 + ((i % 10) / 10)).toFixed(1);
-    const reviewsCount = 15 + ((i * 13) % 450);
-    const stock = 10 + ((i * 7) % 90);
-    const sales = 20 + ((i * 19) % 800);
-    const badge = badgesList[i % badgesList.length];
-
+    // Vary prices slightly per item
+    const adjustedPrice = +(base.price + ((i % 15) * 0.75)).toFixed(2);
+    
     catalog.push({
       id: i,
-      name: `${prefix} ${typeObj.name} ${style}`,
-      category: typeObj.name,
-      price: price,
-      originalPrice: originalPrice,
-      rating: rating,
-      reviewsCount: reviewsCount,
-      stock: stock,
-      sales: sales,
-      badge: badge,
-      featured: i <= 8, // First 8 items are featured on home page
-      description: `Beautiful arrangement of fresh ${prefix.toLowerCase()} ${typeObj.name.toLowerCase()} presented in a ${style.toLowerCase()}. Perfect for gifting and special celebrations.`,
-      image: typeObj.image
+      name: `${prefix} ${base.name} ${variation}`,
+      price: adjustedPrice,
+      originalPrice: +(adjustedPrice * 1.25).toFixed(2),
+      rating: +(4 + ((i % 10) * 0.1)).toFixed(1),
+      reviewsCount: 10 + (i % 80),
+      category: base.category,
+      image: base.image,
+      description: `${base.desc} Premium selection batch #${i}.`
     });
   }
-
+  
   return catalog;
 }
 
-// Master Array exported to flower.js
-const flowerCatalog = generate1000Flowers();
+// Global catalog with 1000+ products
+const flowerCatalog = generateLargeCatalog(1000);
