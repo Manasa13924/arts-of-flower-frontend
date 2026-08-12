@@ -1,15 +1,12 @@
 // ==========================================
-// Safe Catalog Access Helper
+// 1. API Configuration & State Management
 // ==========================================
-function getCatalog() {
-  if (typeof flowerCatalog !== 'undefined') return flowerCatalog;
-  if (window.flowerCatalog) return window.flowerCatalog;
-  return [];
-}
 
-// ==========================================
-// 1. Helpers & State Management
-// ==========================================
+
+// Safe Catalog Access Helper
+function getCatalog() {
+  return window.flowerCatalog || [];
+}
 let currentPage = 1;
 const itemsPerPage = 12;
 
@@ -103,16 +100,13 @@ function updateHomeWishlistHearts() {
   });
 
   // 2. Attach Click Handlers to Home Page Cards & "Add to Cart" Buttons
-  const catalog = getCatalog();
   [1, 2, 3].forEach(id => {
-    // Make home page images open the detail popup
     const imgEl = document.querySelector(`#featured-${id} img, [data-home-id="${id}"] img`);
     if (imgEl) {
       imgEl.style.cursor = 'pointer';
       imgEl.onclick = () => openProductModal(id);
     }
 
-    // Attach handleAddToCart to home page "Add to Cart" buttons
     const cartBtn = document.querySelector(`#home-cart-btn-${id}, [onclick*="addToCart(${id})"]`);
     if (cartBtn) {
       cartBtn.onclick = (e) => handleAddToCart(id, e);
@@ -136,14 +130,16 @@ function openProductModal(flowerId) {
     document.body.appendChild(modal);
   }
 
+  const priceVal = typeof flower.price === 'number' ? flower.price.toFixed(2) : flower.price;
+
   modal.innerHTML = `
     <div class="modal-content">
       <button class="modal-close" onclick="closeProductModal()">×</button>
-      <img class="modal-img" src="${flower.image}" alt="${flower.name}">
+      <img class="modal-img" src="${flower.image || 'https://via.placeholder.com/150'}" alt="${flower.name}">
       <div class="modal-body">
         <h2 style="font-family:'Playfair Display', serif; margin-bottom:0.5rem;">${flower.name}</h2>
         <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating || 5} (${flower.reviewsCount || 10} reviews)</p>
-        <p style="font-size:1.3rem; font-weight:600; color:#ba6870; margin-bottom:1rem;">$${flower.price.toFixed(2)}</p>
+        <p style="font-size:1.3rem; font-weight:600; color:#ba6870; margin-bottom:1rem;">₹${priceVal}</p>
         <p style="color:#666; font-size:0.95rem; margin-bottom:1.5rem; line-height:1.6;">
           ${flower.description || 'Freshly handpicked blooms prepared with care. Perfect for gifts, occasions, or adding a vibrant touch to your home.'}
         </p>
@@ -163,8 +159,44 @@ function closeProductModal() {
 // ==========================================
 // 3. Page Logic Handlers
 // ==========================================
+// Increase item quantity in cart
+function increaseQuantity(flowerId) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === flowerId);
+  if (item) {
+    item.quantity += 1;
+    saveCart(cart);
+    initCartPage();
+    initCheckoutPage();
+  }
+}
 
-// --- Shop Page ---
+// Decrease item quantity in cart (removes item if quantity reaches 0)
+function decreaseQuantity(flowerId) {
+  let cart = getCart();
+  const item = cart.find(i => i.id === flowerId);
+  if (item) {
+    if (item.quantity > 1) {
+      item.quantity -= 1;
+    } else {
+      cart = cart.filter(i => i.id !== flowerId);
+    }
+    saveCart(cart);
+    initCartPage();
+    initCheckoutPage();
+  }
+}
+
+// Remove item completely from cart
+function removeFromCart(flowerId) {
+  let cart = getCart();
+  cart = cart.filter(i => i.id !== flowerId);
+  saveCart(cart);
+  initCartPage();
+  initCheckoutPage();
+}
+
+// --- Shop / Products Page ---
 function initShopPage() {
   const grid = document.getElementById('shop-grid');
   const searchInput = document.getElementById('search-input');
@@ -172,7 +204,7 @@ function initShopPage() {
 
   const catalog = getCatalog();
   if (!catalog || catalog.length === 0) {
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">No products found in catalog.</p>`;
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">No products found in database.</p>`;
     return;
   }
 
@@ -184,18 +216,23 @@ function initShopPage() {
     const start = (page - 1) * itemsPerPage;
     const paginatedItems = activeList.slice(start, start + itemsPerPage);
 
-    grid.innerHTML = paginatedItems.map(f => `
-      <div class="flower-card" onclick="openProductModal(${f.id})">
-        <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">${wishlist.includes(f.id) ? '❤️' : '🤍'}</button>
-        <img src="${f.image}" alt="${f.name}" title="Click to view detailed info">
-        <div class="card-details">
-          <h4>${f.name}</h4>
-          <p class="price">$${f.price.toFixed(2)} ${f.originalPrice ? `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem;">$${f.originalPrice.toFixed(2)}</span>` : ''}</p>
-          <p style="font-size:0.85rem; color:#f39c12;">⭐ ${f.rating || 5} (${f.reviewsCount || 10} reviews)</p>
-          <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
+    grid.innerHTML = paginatedItems.map(f => {
+      const priceVal = typeof f.price === 'number' ? f.price.toFixed(2) : f.price;
+      const origPriceVal = f.originalPrice ? (typeof f.originalPrice === 'number' ? f.originalPrice.toFixed(2) : f.originalPrice) : null;
+
+      return `
+        <div class="flower-card" onclick="openProductModal(${f.id})">
+          <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">${wishlist.includes(f.id) ? '❤️' : '🤍'}</button>
+          <img src="${f.image || 'https://via.placeholder.com/150'}" alt="${f.name}" title="Click to view detailed info">
+          <div class="card-details">
+            <h4>${f.name}</h4>
+            <p class="price">₹${priceVal} ${origPriceVal ? `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem;">₹${origPriceVal}</span>` : ''}</p>
+            <p style="font-size:0.85rem; color:#f39c12;">⭐ ${f.rating || 5} (${f.reviewsCount || 10} reviews)</p>
+            <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     renderPaginationControls();
   }
@@ -250,17 +287,20 @@ function initWishlistPage() {
     return;
   }
 
-  grid.innerHTML = wishlistedFlowers.map(f => `
-    <div class="flower-card" onclick="openProductModal(${f.id})">
-      <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">❤️</button>
-      <img src="${f.image}" alt="${f.name}">
-      <div class="card-details">
-        <h4>${f.name}</h4>
-        <p class="price">$${f.price.toFixed(2)}</p>
-        <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
+  grid.innerHTML = wishlistedFlowers.map(f => {
+    const priceVal = typeof f.price === 'number' ? f.price.toFixed(2) : f.price;
+    return `
+      <div class="flower-card" onclick="openProductModal(${f.id})">
+        <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">❤️</button>
+        <img src="${f.image || 'https://via.placeholder.com/150'}" alt="${f.name}">
+        <div class="card-details">
+          <h4>${f.name}</h4>
+          <p class="price">₹${priceVal}</p>
+          <button class="btn-add-cart" onclick="handleAddToCart(${f.id}, event)">Add to Cart</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // --- Cart Page ---
@@ -288,7 +328,7 @@ function initCartPage() {
                   title="Click to buy again">
                   ${item.name}
                 </span>
-                <span>Qty: ${item.quantity} | Total: $${(item.price * item.quantity).toFixed(2)}</span>
+                <span>Qty: ${item.quantity} | Total: ₹${(item.price * item.quantity).toFixed(2)}</span>
               </li>
             `).join('')}
           </ul>
@@ -297,7 +337,7 @@ function initCartPage() {
     }
   }
 
-  // 2. Render Active Cart Items
+  // 2. Render Active Cart Items with Quantity Controls
   if (!container) return;
   const cart = getCart();
   if (cart.length === 0) {
@@ -312,15 +352,27 @@ function initCartPage() {
     const sub = item.price * item.quantity;
     total += sub;
     return `
-      <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding:1rem; background:white; border-radius:8px;">
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding:1rem; background:white; border-radius:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="display:flex; align-items:center; gap:1rem;">
-          <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;">
+          <img src="${item.image || 'https://via.placeholder.com/150'}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;">
           <div>
             <h4 style="margin:0;">${item.name}</h4>
-            <p style="margin:0; color:#666;">$${item.price.toFixed(2)} x ${item.quantity}</p>
+            <p style="margin:0; color:#666;">₹${Number(item.price).toFixed(2)} each</p>
           </div>
         </div>
-        <div style="font-weight:bold; color:#ba6870;">$${sub.toFixed(2)}</div>
+
+        <!-- Quantity Controls -->
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <button onclick="decreaseQuantity(${item.id})" style="padding:4px 10px; cursor:pointer; font-weight:bold; border:1px solid #ccc; border-radius:4px; background:#f9f9f9;">-</button>
+          <span style="font-weight:bold; padding:0 5px;">${item.quantity}</span>
+          <button onclick="increaseQuantity(${item.id})" style="padding:4px 10px; cursor:pointer; font-weight:bold; border:1px solid #ccc; border-radius:4px; background:#f9f9f9;">+</button>
+        </div>
+
+        <!-- Subtotal & Remove -->
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <div style="font-weight:bold; color:#ba6870;">₹${sub.toFixed(2)}</div>
+          <button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:red; cursor:pointer; font-size:1.1rem;" title="Remove Item">🗑️</button>
+        </div>
       </div>
     `;
   }).join('');
@@ -343,7 +395,7 @@ function initCheckoutPage() {
     return `
       <div style="display:flex; justify-content:space-between; margin-bottom:0.8rem; font-size:0.9rem;">
         <span>${item.name} (x${item.quantity})</span>
-        <span style="font-weight:600;">$${sub.toFixed(2)}</span>
+        <span style="font-weight:600;">₹${sub.toFixed(2)}</span>
       </div>
     `;
   }).join('');
@@ -392,7 +444,7 @@ function initDashboardPage() {
       <tr>
         <td>${f.name}</td>
         <td>${f.category || 'N/A'}</td>
-        <td>$${f.price.toFixed(2)}</td>
+        <td>₹${Number(f.price).toFixed(2)}</td>
         <td>${f.stock || 0} units</td>
         <td>${sales}</td>
       </tr>
@@ -403,20 +455,37 @@ function initDashboardPage() {
   const unitsEl = document.getElementById('units-sold');
   const avgEl = document.getElementById('avg-price');
 
-  if (revEl) revEl.textContent = `$${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  if (revEl) revEl.textContent = `₹${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
   if (unitsEl) unitsEl.textContent = totalUnits;
-  if (avgEl) avgEl.textContent = `$${(totalRev / (totalUnits || 1)).toFixed(2)}`;
+  if (avgEl) avgEl.textContent = `₹${(totalRev / (totalUnits || 1)).toFixed(2)}`;
 }
 
 // ==========================================
-// Initialization
+// Dynamic Initialization via Spring Boot Backend
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-  updateBadges();
-  updateHomeWishlistHearts();
-  initShopPage();
-  initWishlistPage();
-  initCartPage();
-  initCheckoutPage();
-  initDashboardPage();
-});
+async function loadBackendCatalog() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error("Failed to fetch products");
+
+    const data = await response.json();
+    
+    // Check if the response is paginated (data.content) or a plain array (data)
+    flowerCatalog = data.content ? data.content : data;
+
+  } catch (error) {
+    console.error("Error connecting to Spring Boot database:", error);
+  } finally {
+    // Initialize page components once data is loaded (or fallback to empty array)
+    updateBadges();
+    updateHomeWishlistHearts();
+    initShopPage();
+    initWishlistPage();
+    initCartPage();
+    initCheckoutPage();
+    initDashboardPage();
+  }
+}
+
+// Trigger initial backend load on page DOM load
+document.addEventListener('DOMContentLoaded', loadBackendCatalog);

@@ -1,7 +1,6 @@
 # 🌸 ARTs of flower Analytics Dashboard
 
-An interactive, responsive web application built to help local floriculture vendors manage inventory, monitor sales performance, and track revenue across 35 regional flower varieties.
-
+An interactive, responsive web application built to help local floriculture vendors manage inventory, monitor sales performance
 ---
 ## 🚀 Live Demo
 [View Live Application](https://Manasa13924.github.io/arts-of-flower-frontend/)
