@@ -304,6 +304,7 @@ function initWishlistPage() {
 }
 
 // --- Cart Page ---
+// --- Cart Page ---
 function initCartPage() {
   const container = document.getElementById('cart-items');
   const summaryBox = document.getElementById('purchased-summary');
@@ -323,9 +324,9 @@ function initCartPage() {
             ${history.map(item => `
               <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
                 <span 
-                  onclick="buyAgainPrompt(${item.id})" 
+                  onclick="openProductModal(${item.id})" 
                   style="cursor:pointer; color:#ba6870; font-weight:600; text-decoration:underline;"
-                  title="Click to buy again">
+                  title="Click to view details and buy again">
                   ${item.name}
                 </span>
                 <span>Qty: ${item.quantity} | Total: ₹${(item.price * item.quantity).toFixed(2)}</span>
@@ -380,6 +381,7 @@ function initCartPage() {
   if (totalDisplay) totalDisplay.textContent = total.toFixed(2);
 }
 
+
 // --- Checkout Page ---
 function initCheckoutPage() {
   const summaryBox = document.getElementById('checkout-summary-items');
@@ -427,40 +429,62 @@ function processOrder(e) {
   window.location.href = 'index.html';
 }
 
+/// --- Dashboard Page ---
 // --- Dashboard Page ---
 function initDashboardPage() {
   const tableBody = document.getElementById('table-body');
   if (!tableBody) return;
 
   const catalog = getCatalog();
-  let totalRev = 0, totalUnits = 0;
+  const orderHistory = getOrderHistory(); // Retrieves actual completed purchases
+
+  // 1. Calculate live dynamic sales from order history
+  const salesMap = {};
+  orderHistory.forEach(order => {
+    const qty = Number(order.quantity) || 0;
+    salesMap[order.id] = (salesMap[order.id] || 0) + qty;
+  });
+
+  let totalRev = 0;
+  let totalUnits = 0;
 
   tableBody.innerHTML = catalog.slice(0, 50).map(f => {
-    const sales = f.sales || 0;
-    const rev = f.price * sales;
+    // Inventory count from backend
+    const stock = f.reviewsCount ?? f.reviews_count ?? f.stock ?? 0;
+
+    // Dynamic sales = purchases in order history + any default backend totalSales
+    const dynamicSales = (salesMap[f.id] || 0) + (f.totalSales || f.sales || 0);
+
+    const price = Number(f.price) || 0;
+    const rev = price * dynamicSales;
+
     totalRev += rev;
-    totalUnits += sales;
+    totalUnits += dynamicSales;
+
     return `
       <tr>
         <td>${f.name}</td>
         <td>${f.category || 'N/A'}</td>
-        <td>₹${Number(f.price).toFixed(2)}</td>
-        <td>${f.stock || 0} units</td>
-        <td>${sales}</td>
+        <td>₹${price.toFixed(2)}</td>
+        <td>${stock} units</td>
+        <td>${dynamicSales}</td>
       </tr>
     `;
   }).join('');
 
+  // 2. Update Top Analytics Cards dynamically
   const revEl = document.getElementById('total-revenue');
   const unitsEl = document.getElementById('units-sold');
   const avgEl = document.getElementById('avg-price');
 
-  if (revEl) revEl.textContent = `₹${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-  if (unitsEl) unitsEl.textContent = totalUnits;
-  if (avgEl) avgEl.textContent = `₹${(totalRev / (totalUnits || 1)).toFixed(2)}`;
-}
+  const avgPrice = catalog.length > 0 
+    ? (catalog.reduce((sum, item) => sum + (Number(item.price) || 0), 0) / catalog.length)
+    : 0;
 
-// ==========================================
+  if (revEl) revEl.textContent = `₹${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  if (unitsEl) unitsEl.textContent = totalUnits;
+  if (avgEl) avgEl.textContent = `₹${avgPrice.toFixed(2)}`;
+}
 // Dynamic Initialization via Spring Boot Backend
 // ==========================================
 async function loadBackendCatalog() {
