@@ -9,14 +9,21 @@ async function loadBackendCatalog() {
 
     const data = await response.json();
     
-    // Spring Boot Page stores items inside data.content
-    window.flowerCatalog = data.content ? data.content : data;
+    // Handle Spring Boot Page object vs plain Array
+    if (Array.isArray(data)) {
+      window.flowerCatalog = data;
+    } else if (data.content && Array.isArray(data.content)) {
+      window.flowerCatalog = data.content;
+    } else {
+      window.flowerCatalog = [];
+    }
+
     console.log("Loaded flowers from database:", window.flowerCatalog);
 
   } catch (error) {
     console.error("Error connecting to Spring Boot backend:", error);
   } finally {
-    // 🚀 Refresh UI components after data is ready
+    // Refresh UI components
     if (typeof updateBadges === 'function') updateBadges();
     if (typeof updateHomeWishlistHearts === 'function') updateHomeWishlistHearts();
     if (typeof initShopPage === 'function') initShopPage();
@@ -27,5 +34,4 @@ async function loadBackendCatalog() {
   }
 }
 
-// Load data as soon as DOM is ready
 document.addEventListener('DOMContentLoaded', loadBackendCatalog);
