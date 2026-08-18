@@ -1,5 +1,5 @@
 // product.js - Central Data Fetcher
-const API_URL = "http://localhost:8080/api/products?page=0&size=100";
+const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100";
 window.flowerCatalog = []; // Global catalog array
 
 async function loadBackendCatalog() {
