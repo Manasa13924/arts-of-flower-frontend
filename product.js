@@ -2,7 +2,7 @@
 const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100";
 window.flowerCatalog = []; // Global catalog array
 
-// Default fallback image if an image fails or is missing
+// Default fallback image when no valid image exists
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300";
 
 async function loadBackendCatalog() {
@@ -19,17 +19,24 @@ async function loadBackendCatalog() {
       rawList = data.content;
     }
 
-    // Clean up product names and relative image paths
+    // Clean up product names and image paths
     window.flowerCatalog = rawList.map(item => {
+      // 1. Fix numeric or empty product names
       const nameVal = String(item.name || "").trim();
       const cleanName = (!nameVal || !isNaN(nameVal)) ? `Flower #${item.id || item.price}` : nameVal;
 
+      // 2. Fix image pathing logic
       let cleanImage = DEFAULT_IMAGE;
-      if (item.imageUrl) {
-        if (item.imageUrl.startsWith("http")) {
-          cleanImage = item.imageUrl;
+      if (item.imageUrl && item.imageUrl.trim() !== "") {
+        const imgStr = item.imageUrl.trim();
+        if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) {
+          cleanImage = imgStr;
+        } else if (imgStr.includes(".")) {
+          // Has file extension (e.g. "rose.jpg")
+          cleanImage = `./images/${imgStr}`;
         } else {
-          cleanImage = `./images/${item.imageUrl}`;
+          // Plain numeric string or invalid filename -> fallback to online placeholder
+          cleanImage = DEFAULT_IMAGE;
         }
       }
 
@@ -40,7 +47,7 @@ async function loadBackendCatalog() {
       };
     });
 
-    console.log("Loaded flowers from database:", window.flowerCatalog);
+    console.log("Loaded and sanitized flowers:", window.flowerCatalog);
 
   } catch (error) {
     console.error("Error connecting to Spring Boot backend:", error);
