@@ -12,14 +12,33 @@ const itemsPerPage = 12;
 // Default image fallback if database image is missing or invalid
 const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300";
 
-// Image URL Helper function
+// Corrected Image URL Helper Function
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
-  const img = item.imageUrl || item.image;
-  if (!img || typeof img !== 'string') return DEFAULT_FLOWER_IMG;
-  const trimmed = img.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
-  if (trimmed.includes(".")) return `./images/${trimmed}`;
+  
+  // Extract image path string from item properties
+  let rawImg = item.imageUrl || item.image || item.image_url;
+  
+  if (!rawImg || typeof rawImg !== 'string') return DEFAULT_FLOWER_IMG;
+  
+  rawImg = rawImg.trim();
+  if (rawImg.length === 0) return DEFAULT_FLOWER_IMG;
+
+  // 1. Return full online HTTP/HTTPS URLs stored in DB directly
+  if (rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
+    return rawImg;
+  }
+
+  // 2. Return relative paths starting with / or ./ directly
+  if (rawImg.startsWith("/") || rawImg.startsWith("./")) {
+    return rawImg;
+  }
+
+  // 3. Simple image file names fallback to local images directory
+  if (rawImg.includes(".")) {
+    return `./images/${rawImg}`;
+  }
+
   return DEFAULT_FLOWER_IMG;
 }
 
@@ -335,7 +354,7 @@ function initCartPage() {
           <h3 style="margin-top:0; color:#ba6870;">🌸 Your Past Purchases Summary</h3>
           <ul style="list-style:none; padding:0; margin:0;">
             ${history.map(item => `
-              <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
+              <li style="display:flex; justify-space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
                 <span 
                   onclick="openProductModal(${item.id})" 
                   style="cursor:pointer; color:#ba6870; font-weight:600; text-decoration:underline;"
