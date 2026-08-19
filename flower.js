@@ -16,25 +16,25 @@ const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
   
-  // Extract image path string from item properties
-  let rawImg = item.imageUrl || item.image || item.image_url;
-  
-  if (!rawImg || typeof rawImg !== 'string') return DEFAULT_FLOWER_IMG;
-  
-  rawImg = rawImg.trim();
-  if (rawImg.length === 0) return DEFAULT_FLOWER_IMG;
+  // Extract any possible image field returned by backend
+  let rawImg = item.imageUrl || item.image || item.image_url || item.img || item.photo;
 
-  // 1. Return full online HTTP/HTTPS URLs stored in DB directly
+  if (!rawImg || typeof rawImg !== 'string') return DEFAULT_FLOWER_IMG;
+
+  rawImg = rawImg.trim();
+  if (rawImg === "" || rawImg === "null" || rawImg === "undefined") return DEFAULT_FLOWER_IMG;
+
+  // 1. Direct web links (http/https)
   if (rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
     return rawImg;
   }
 
-  // 2. Return relative paths starting with / or ./ directly
+  // 2. Relative paths
   if (rawImg.startsWith("/") || rawImg.startsWith("./")) {
     return rawImg;
   }
 
-  // 3. Simple image file names fallback to local images directory
+  // 3. Simple image filenames
   if (rawImg.includes(".")) {
     return `./images/${rawImg}`;
   }
@@ -523,21 +523,23 @@ async function loadFlowersFromDatabase() {
     const data = await response.json();
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
-    // Sanitize backend data
+    // Print DB items to console so you can inspect raw backend structure
+    console.log("Raw Database Items Loaded:", rawList);
+
     window.flowerCatalog = rawList.map(item => ({
       ...item,
       id: item.id,
       name: item.name || `Flower #${item.id}`,
       price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
-      imageUrl: item.imageUrl || item.image || item.image_url
+      // Ensure image property persists correctly
+      imageUrl: item.imageUrl || item.image || item.image_url || item.img || item.photo
     }));
 
-    // Initialize layout views
     initShopPage();
     updateBadges();
   } catch (error) {
     console.error("Error loading flower database:", error);
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh or check backend server state.</p>`;
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh.</p>`;
   }
 }
 
