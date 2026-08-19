@@ -507,3 +507,45 @@ function initDashboardPage() {
   if (unitsEl) unitsEl.textContent = totalUnits;
   if (avgEl) avgEl.textContent = `₹${avgPrice.toFixed(2)}`;
 }
+// ==========================================
+// 4. API Fetching & Initializer
+// ==========================================
+async function loadFlowersFromDatabase() {
+  const grid = document.getElementById('shop-grid');
+  if (!grid) return;
+
+  grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">Loading blooms from database...</p>`;
+
+  try {
+    const response = await fetch("https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100");
+    if (!response.ok) throw new Error("Failed to fetch products");
+
+    const data = await response.json();
+    const rawList = Array.isArray(data) ? data : (data.content || []);
+
+    // Sanitize backend data
+    window.flowerCatalog = rawList.map(item => ({
+      ...item,
+      id: item.id,
+      name: item.name || `Flower #${item.id}`,
+      price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
+      imageUrl: item.imageUrl || item.image || item.image_url
+    }));
+
+    // Initialize layout views
+    initShopPage();
+    updateBadges();
+  } catch (error) {
+    console.error("Error loading flower database:", error);
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh or check backend server state.</p>`;
+  }
+}
+
+// Auto-run on DOM Ready
+document.addEventListener("DOMContentLoaded", () => {
+  loadFlowersFromDatabase();
+  initWishlistPage();
+  initCartPage();
+  initCheckoutPage();
+  initDashboardPage();
+});
