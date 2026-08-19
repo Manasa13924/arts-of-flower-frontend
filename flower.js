@@ -2,13 +2,26 @@
 // 1. API Configuration & State Management
 // ==========================================
 
-
 // Safe Catalog Access Helper
 function getCatalog() {
   return window.flowerCatalog || [];
 }
 let currentPage = 1;
 const itemsPerPage = 12;
+
+// Default image fallback if database image is missing or invalid
+const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300";
+
+// Image URL Helper function
+function getValidImageUrl(item) {
+  if (!item) return DEFAULT_FLOWER_IMG;
+  const img = item.imageUrl || item.image;
+  if (!img || typeof img !== 'string') return DEFAULT_FLOWER_IMG;
+  const trimmed = img.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  if (trimmed.includes(".")) return `./images/${trimmed}`;
+  return DEFAULT_FLOWER_IMG;
+}
 
 function getCart() { 
   return JSON.parse(localStorage.getItem('flower_cart')) || []; 
@@ -131,11 +144,12 @@ function openProductModal(flowerId) {
   }
 
   const priceVal = typeof flower.price === 'number' ? flower.price.toFixed(2) : flower.price;
+  const imgUrl = getValidImageUrl(flower);
 
   modal.innerHTML = `
     <div class="modal-content">
       <button class="modal-close" onclick="closeProductModal()">×</button>
-      <img class="modal-img" src="${flower.image || 'https://via.placeholder.com/150'}" alt="${flower.name}">
+      <img class="modal-img" src="${imgUrl}" alt="${flower.name}" onerror="this.onerror=null; this.src='${DEFAULT_FLOWER_IMG}';">
       <div class="modal-body">
         <h2 style="font-family:'Playfair Display', serif; margin-bottom:0.5rem;">${flower.name}</h2>
         <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating || 5} (${flower.reviewsCount || 10} reviews)</p>
@@ -159,7 +173,6 @@ function closeProductModal() {
 // ==========================================
 // 3. Page Logic Handlers
 // ==========================================
-// Increase item quantity in cart
 function increaseQuantity(flowerId) {
   const cart = getCart();
   const item = cart.find(i => i.id === flowerId);
@@ -171,7 +184,6 @@ function increaseQuantity(flowerId) {
   }
 }
 
-// Decrease item quantity in cart (removes item if quantity reaches 0)
 function decreaseQuantity(flowerId) {
   let cart = getCart();
   const item = cart.find(i => i.id === flowerId);
@@ -187,7 +199,6 @@ function decreaseQuantity(flowerId) {
   }
 }
 
-// Remove item completely from cart
 function removeFromCart(flowerId) {
   let cart = getCart();
   cart = cart.filter(i => i.id !== flowerId);
@@ -219,11 +230,12 @@ function initShopPage() {
     grid.innerHTML = paginatedItems.map(f => {
       const priceVal = typeof f.price === 'number' ? f.price.toFixed(2) : f.price;
       const origPriceVal = f.originalPrice ? (typeof f.originalPrice === 'number' ? f.originalPrice.toFixed(2) : f.originalPrice) : null;
+      const imgUrl = getValidImageUrl(f);
 
       return `
         <div class="flower-card" onclick="openProductModal(${f.id})">
           <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">${wishlist.includes(f.id) ? '❤️' : '🤍'}</button>
-          <img src="${f.image || 'https://via.placeholder.com/150'}" alt="${f.name}" title="Click to view detailed info">
+          <img src="${imgUrl}" alt="${f.name}" title="Click to view detailed info" onerror="this.onerror=null; this.src='${DEFAULT_FLOWER_IMG}';">
           <div class="card-details">
             <h4>${f.name}</h4>
             <p class="price">₹${priceVal} ${origPriceVal ? `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem;">₹${origPriceVal}</span>` : ''}</p>
@@ -289,10 +301,12 @@ function initWishlistPage() {
 
   grid.innerHTML = wishlistedFlowers.map(f => {
     const priceVal = typeof f.price === 'number' ? f.price.toFixed(2) : f.price;
+    const imgUrl = getValidImageUrl(f);
+
     return `
       <div class="flower-card" onclick="openProductModal(${f.id})">
         <button class="wishlist-btn" onclick="toggleWishlist(${f.id}, event)">❤️</button>
-        <img src="${f.image || 'https://via.placeholder.com/150'}" alt="${f.name}">
+        <img src="${imgUrl}" alt="${f.name}" onerror="this.onerror=null; this.src='${DEFAULT_FLOWER_IMG}';">
         <div class="card-details">
           <h4>${f.name}</h4>
           <p class="price">₹${priceVal}</p>
@@ -303,7 +317,6 @@ function initWishlistPage() {
   }).join('');
 }
 
-// --- Cart Page ---
 // --- Cart Page ---
 function initCartPage() {
   const container = document.getElementById('cart-items');
@@ -338,7 +351,7 @@ function initCartPage() {
     }
   }
 
-  // 2. Render Active Cart Items with Quantity Controls
+  // 2. Render Active Cart Items
   if (!container) return;
   const cart = getCart();
   if (cart.length === 0) {
@@ -352,24 +365,24 @@ function initCartPage() {
   container.innerHTML = cart.map(item => {
     const sub = item.price * item.quantity;
     total += sub;
+    const imgUrl = getValidImageUrl(item);
+
     return `
       <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding:1rem; background:white; border-radius:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="display:flex; align-items:center; gap:1rem;">
-          <img src="${item.image || 'https://via.placeholder.com/150'}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;">
+          <img src="${imgUrl}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;" onerror="this.onerror=null; this.src='${DEFAULT_FLOWER_IMG}';">
           <div>
             <h4 style="margin:0;">${item.name}</h4>
             <p style="margin:0; color:#666;">₹${Number(item.price).toFixed(2)} each</p>
           </div>
         </div>
 
-        <!-- Quantity Controls -->
         <div style="display:flex; align-items:center; gap:0.5rem;">
           <button onclick="decreaseQuantity(${item.id})" style="padding:4px 10px; cursor:pointer; font-weight:bold; border:1px solid #ccc; border-radius:4px; background:#f9f9f9;">-</button>
           <span style="font-weight:bold; padding:0 5px;">${item.quantity}</span>
           <button onclick="increaseQuantity(${item.id})" style="padding:4px 10px; cursor:pointer; font-weight:bold; border:1px solid #ccc; border-radius:4px; background:#f9f9f9;">+</button>
         </div>
 
-        <!-- Subtotal & Remove -->
         <div style="display:flex; align-items:center; gap:1rem;">
           <div style="font-weight:bold; color:#ba6870;">₹${sub.toFixed(2)}</div>
           <button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:red; cursor:pointer; font-size:1.1rem;" title="Remove Item">🗑️</button>
@@ -380,7 +393,6 @@ function initCartPage() {
 
   if (totalDisplay) totalDisplay.textContent = total.toFixed(2);
 }
-
 
 // --- Checkout Page ---
 function initCheckoutPage() {
@@ -405,13 +417,11 @@ function initCheckoutPage() {
   if (totalEl) totalEl.textContent = total.toFixed(2);
 }
 
-// Complete Order & Move Active Items to History
 function processOrder(e) {
   if (e) e.preventDefault();
   const cart = getCart();
   if (cart.length === 0) return alert('Your cart is empty!');
 
-  // Move items to order history
   const history = getOrderHistory();
   cart.forEach(item => {
     const existing = history.find(h => h.id === item.id);
@@ -429,16 +439,14 @@ function processOrder(e) {
   window.location.href = 'index.html';
 }
 
-/// --- Dashboard Page ---
 // --- Dashboard Page ---
 function initDashboardPage() {
   const tableBody = document.getElementById('table-body');
   if (!tableBody) return;
 
   const catalog = getCatalog();
-  const orderHistory = getOrderHistory(); // Retrieves actual completed purchases
+  const orderHistory = getOrderHistory();
 
-  // 1. Calculate live dynamic sales from order history
   const salesMap = {};
   orderHistory.forEach(order => {
     const qty = Number(order.quantity) || 0;
@@ -449,12 +457,8 @@ function initDashboardPage() {
   let totalUnits = 0;
 
   tableBody.innerHTML = catalog.slice(0, 50).map(f => {
-    // Inventory count from backend
     const stock = f.reviewsCount ?? f.reviews_count ?? f.stock ?? 0;
-
-    // Dynamic sales = purchases in order history + any default backend totalSales
     const dynamicSales = (salesMap[f.id] || 0) + (f.totalSales || f.sales || 0);
-
     const price = Number(f.price) || 0;
     const rev = price * dynamicSales;
 
@@ -472,7 +476,6 @@ function initDashboardPage() {
     `;
   }).join('');
 
-  // 2. Update Top Analytics Cards dynamically
   const revEl = document.getElementById('total-revenue');
   const unitsEl = document.getElementById('units-sold');
   const avgEl = document.getElementById('avg-price');
@@ -485,31 +488,3 @@ function initDashboardPage() {
   if (unitsEl) unitsEl.textContent = totalUnits;
   if (avgEl) avgEl.textContent = `₹${avgPrice.toFixed(2)}`;
 }
-// Dynamic Initialization via Spring Boot Backend
-// ==========================================
-async function loadBackendCatalog() {
-  try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error("Failed to fetch products");
-
-    const data = await response.json();
-    
-    // Check if the response is paginated (data.content) or a plain array (data)
-    flowerCatalog = data.content ? data.content : data;
-
-  } catch (error) {
-    console.error("Error connecting to Spring Boot database:", error);
-  } finally {
-    // Initialize page components once data is loaded (or fallback to empty array)
-    updateBadges();
-    updateHomeWishlistHearts();
-    initShopPage();
-    initWishlistPage();
-    initCartPage();
-    initCheckoutPage();
-    initDashboardPage();
-  }
-}
-
-// Trigger initial backend load on page DOM load
-document.addEventListener('DOMContentLoaded', loadBackendCatalog);
