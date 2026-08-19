@@ -16,27 +16,27 @@ const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
   
-  // Extract any possible image field returned by backend
   let rawImg = item.imageUrl || item.image || item.image_url || item.img || item.photo;
 
-  if (!rawImg || typeof rawImg !== 'string') return DEFAULT_FLOWER_IMG;
+  if (rawImg !== null && rawImg !== undefined) {
+    let strImg = String(rawImg).trim();
 
-  rawImg = rawImg.trim();
-  if (rawImg === "" || rawImg === "null" || rawImg === "undefined") return DEFAULT_FLOWER_IMG;
-
-  // 1. Direct web links (http/https)
-  if (rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
-    return rawImg;
-  }
-
-  // 2. Relative paths
-  if (rawImg.startsWith("/") || rawImg.startsWith("./")) {
-    return rawImg;
-  }
-
-  // 3. Simple image filenames
-  if (rawImg.includes(".")) {
-    return `./images/${rawImg}`;
+    // 1. Direct Web URLs
+    if (strImg.startsWith("http://") || strImg.startsWith("https://")) {
+      return strImg;
+    }
+    // 2. Relative paths
+    if (strImg.startsWith("/") || strImg.startsWith("./")) {
+      return strImg;
+    }
+    // 3. Filenames with extensions in local images folder
+    if (strImg.includes(".")) {
+      return `./images/${strImg}`;
+    }
+    // 4. Handle numeric IDs or names missing extensions by checking local JPG/PNG path
+    if (strImg !== "" && strImg !== "null" && strImg !== "undefined") {
+      return `./images/${strImg}.jpg`;
+    }
   }
 
   return DEFAULT_FLOWER_IMG;
@@ -66,29 +66,25 @@ function getOrderHistory() {
 
 // Add to Cart with "Proceed to Payment?" Prompt
 function handleAddToCart(flowerId, event) {
-  if (event) event.stopPropagation(); // Stop click from triggering modal image popup
+  if (event) event.stopPropagation(); 
   
   const catalog = getCatalog();
   const cart = getCart();
   const flower = catalog.find(f => f.id === flowerId);
   if (!flower) return;
 
-  // Add item to cart
   const item = cart.find(i => i.id === flowerId);
   if (item) item.quantity += 1;
   else cart.push({ ...flower, quantity: 1 });
 
   saveCart(cart);
 
-  // Ask user if they want to proceed to payment right now
   const proceed = confirm(`"${flower.name}" added to cart!\n\nDo you want to proceed to payment now?`);
-  
   if (proceed) {
-    window.location.href = 'cart.html'; // Direct to Cart page for payment
+    window.location.href = 'cart.html';
   }
 }
 
-// "Buy Again" prompt when clicking a past purchase name in Cart
 function buyAgainPrompt(flowerId) {
   const catalog = getCatalog();
   const flower = catalog.find(f => f.id === flowerId);
@@ -125,13 +121,11 @@ function updateBadges() {
 function updateHomeWishlistHearts() {
   const wishlist = getWishlist();
   
-  // 1. Update Wishlist Hearts on Home Page
   [1, 2, 3].forEach(id => {
     const btn = document.getElementById(`wish-btn-${id}`);
     if (btn) btn.textContent = wishlist.includes(id) ? '❤️' : '🤍';
   });
 
-  // 2. Attach Click Handlers to Home Page Cards & "Add to Cart" Buttons
   [1, 2, 3].forEach(id => {
     const imgEl = document.querySelector(`#featured-${id} img, [data-home-id="${id}"] img`);
     if (imgEl) {
@@ -147,7 +141,7 @@ function updateHomeWishlistHearts() {
 }
 
 // ==========================================
-// 2. Detailed Flower Info Modal (Triggers when Image is clicked)
+// 2. Detailed Flower Info Modal
 // ==========================================
 function openProductModal(flowerId) {
   const catalog = getCatalog();
@@ -343,7 +337,6 @@ function initCartPage() {
   const totalDisplay = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
 
-  // 1. Render Past Purchased Summary
   if (summaryBox) {
     const history = getOrderHistory();
     if (history.length === 0) {
@@ -354,7 +347,7 @@ function initCartPage() {
           <h3 style="margin-top:0; color:#ba6870;">🌸 Your Past Purchases Summary</h3>
           <ul style="list-style:none; padding:0; margin:0;">
             ${history.map(item => `
-              <li style="display:flex; justify-space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
+              <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
                 <span 
                   onclick="openProductModal(${item.id})" 
                   style="cursor:pointer; color:#ba6870; font-weight:600; text-decoration:underline;"
@@ -370,7 +363,6 @@ function initCartPage() {
     }
   }
 
-  // 2. Render Active Cart Items
   if (!container) return;
   const cart = getCart();
   if (cart.length === 0) {
@@ -475,7 +467,7 @@ function initDashboardPage() {
   let totalRev = 0;
   let totalUnits = 0;
 
-  tableBody.innerHTML = catalog.slice(0, 50).map(f => {
+  tableBody.innerHTML = catalog.map(f => {
     const stock = f.reviewsCount ?? f.reviews_count ?? f.stock ?? 0;
     const dynamicSales = (salesMap[f.id] || 0) + (f.totalSales || f.sales || 0);
     const price = Number(f.price) || 0;
@@ -507,14 +499,15 @@ function initDashboardPage() {
   if (unitsEl) unitsEl.textContent = totalUnits;
   if (avgEl) avgEl.textContent = `₹${avgPrice.toFixed(2)}`;
 }
+
 // ==========================================
 // 4. API Fetching & Initializer
 // ==========================================
 async function loadFlowersFromDatabase() {
   const grid = document.getElementById('shop-grid');
-  if (!grid) return;
-
-  grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">Loading blooms from database...</p>`;
+  if (grid) {
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">Loading blooms from database...</p>`;
+  }
 
   try {
     const response = await fetch("https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100");
@@ -523,31 +516,31 @@ async function loadFlowersFromDatabase() {
     const data = await response.json();
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
-    // Print DB items to console so you can inspect raw backend structure
-    console.log("Raw Database Items Loaded:", rawList);
-
     window.flowerCatalog = rawList.map(item => ({
       ...item,
       id: item.id,
       name: item.name || `Flower #${item.id}`,
       price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
-      // Ensure image property persists correctly
       imageUrl: item.imageUrl || item.image || item.image_url || item.img || item.photo
     }));
 
+    // Trigger page renders ONCE catalog data is loaded into memory
     initShopPage();
+    initWishlistPage();
+    initCartPage();
+    initCheckoutPage();
+    initDashboardPage();
     updateBadges();
+    updateHomeWishlistHearts();
   } catch (error) {
     console.error("Error loading flower database:", error);
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh.</p>`;
+    if (grid) {
+      grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh.</p>`;
+    }
   }
 }
 
 // Auto-run on DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
   loadFlowersFromDatabase();
-  initWishlistPage();
-  initCartPage();
-  initCheckoutPage();
-  initDashboardPage();
 });
