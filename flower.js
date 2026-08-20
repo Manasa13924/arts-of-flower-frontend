@@ -345,6 +345,7 @@ function initWishlistPage() {
 // --- Wishlist Page ---
 
 // --- Cart Page ---
+// --- Cart Page ---
 function initCartPage() {
   const container = document.getElementById('cart-items');
   const summaryBox = document.getElementById('purchased-summary');
@@ -357,18 +358,20 @@ function initCartPage() {
       summaryBox.innerHTML = `<p style="color:#888; font-style:italic;">No past purchases yet.</p>`;
     } else {
       summaryBox.innerHTML = `
-        <div style="background: #fff8f8; border: 1px solid #f1c40f; border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
-          <h3 style="margin-top:0; color:#ba6870;">🌸 Your Past Purchases Summary</h3>
+        <div style="background: #ffffff; border: 1px solid #f1d6d8; border-radius: 8px; padding: 1.2rem; margin-bottom: 2rem;">
+          <h3 style="margin-top:0; color:#ba6870; font-family:'Playfair Display', serif;">🌸 Your Past Purchases Summary</h3>
           <ul style="list-style:none; padding:0; margin:0;">
             ${history.map(item => `
-              <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px dashed #eee;">
+              <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom: none;">
                 <span 
                   onclick="openProductModal(${item.id})" 
-                  style="cursor:pointer; color:#ba6870; font-weight:600; text-decoration:underline;"
-                  title="Click to view details and buy again">
+                  style="cursor:pointer; color:#333333; font-weight:600; text-decoration:none;"
+                  onmouseover="this.style.color='#ba6870'"
+                  onmouseout="this.style.color='#333333'"
+                  title="Click to view details">
                   ${item.name}
                 </span>
-                <span>Qty: ${item.quantity} | Total: ₹${(item.price * item.quantity).toFixed(2)}</span>
+                <span style="color: #666; font-size: 0.9rem;">Qty: ${item.quantity} | Total: ₹${(item.price * item.quantity).toFixed(2)}</span>
               </li>
             `).join('')}
           </ul>
@@ -418,7 +421,6 @@ function initCartPage() {
 
   if (totalDisplay) totalDisplay.textContent = total.toFixed(2);
 }
-
 // --- Checkout Page ---
 function initCheckoutPage() {
   const summaryBox = document.getElementById('checkout-summary-items');
