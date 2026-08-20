@@ -100,11 +100,26 @@ function toggleWishlist(flowerId, event) {
 
 function updateBadges() {
   const cart = getCart();
-  const wishlist = getWishlist();
+  let wishlistIds = getWishlist();
+  const catalog = getCatalog();
+
+  // If catalog is loaded, clean up deleted IDs from localStorage
+  if (catalog && catalog.length > 0) {
+    const validCatalogIds = catalog.map(f => f.id);
+    const cleanedWishlist = wishlistIds.filter(id => validCatalogIds.includes(id));
+    
+    // Auto-remove deleted items permanently if a mismatch is found
+    if (cleanedWishlist.length !== wishlistIds.length) {
+      wishlistIds = cleanedWishlist;
+      localStorage.setItem('flower_wishlist', JSON.stringify(wishlistIds));
+    }
+  }
+
   const cBadge = document.getElementById('cart-count');
   const wBadge = document.getElementById('wishlist-count');
+  
   if (cBadge) cBadge.textContent = cart.reduce((s, i) => s + i.quantity, 0);
-  if (wBadge) wBadge.textContent = wishlist.length;
+  if (wBadge) wBadge.textContent = wishlistIds.length;
 }
 
 function updateHomeWishlistHearts() {
@@ -295,14 +310,16 @@ function initWishlistPage() {
   const catalog = getCatalog();
 
   if (!wishlistIds || wishlistIds.length === 0) {
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Your wishlist is currently empty. Click ❤️ on any flower in the shop to save it here!</p>`;
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Your wishlist is currently empty. Click ❤️ on any flower to save it here!</p>`;
+    updateBadges();
     return;
   }
 
   const wishlistedFlowers = catalog.filter(f => wishlistIds.includes(f.id));
 
   if (wishlistedFlowers.length === 0) {
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Loading saved wishlist items...</p>`;
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">No active items found in wishlist.</p>`;
+    updateBadges();
     return;
   }
 
@@ -322,6 +339,8 @@ function initWishlistPage() {
       </div>
     `;
   }).join('');
+
+  updateBadges();
 }
 // --- Wishlist Page ---
 
