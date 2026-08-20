@@ -18,24 +18,16 @@ function getCatalog() {
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
   
-  let rawImg = item.imageUrl || item.image || item.image_url || item.img || item.photo;
+  let rawImg = item.image || item.imageUrl || item.image_url;
 
-  if (rawImg !== null && rawImg !== undefined) {
-    let strImg = String(rawImg).trim();
-
+  if (rawImg && typeof rawImg === 'string') {
+    let strImg = rawImg.trim();
     if (strImg.startsWith("http://") || strImg.startsWith("https://")) {
       return strImg;
     }
-    if (strImg.startsWith("/") || strImg.startsWith("./")) {
-      return strImg;
-    }
-    if (strImg.includes(".")) {
-      return `./images/${strImg}`;
-    }
   }
 
-  const flowerId = item.id || Math.floor(Math.random() * 1000) + 1;
-  return `https://picsum.photos/seed/flower_db_${flowerId}/500/500`;
+  return DEFAULT_FLOWER_IMG;
 }
 
 // Storage Helpers
@@ -515,30 +507,26 @@ async function loadFlowersFromDatabase() {
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
     window.flowerCatalog = rawList.map(item => {
-      // 1. Sanitize product name
-      const nameVal = String(item.name || "").trim();
-      const cleanName = (!nameVal || !isNaN(nameVal)) ? (item.category || `Flower #${item.id || item.price}`) : nameVal;
-
-      // 2. Parse price
+      // Extract image directly from backend 'image' key or fallback
+      let imgUrl = item.image || item.imageUrl || DEFAULT_FLOWER_IMG;
+      
       let parsedPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
-
-      // 3. Resolve Image URL
-      let cleanImage = getValidImageUrl(item);
+      let parsedOrigPrice = typeof item.originalPrice === 'number' ? item.originalPrice : parseFloat(item.originalPrice) || null;
 
       return {
         ...item,
         id: item.id,
-        name: cleanName,
-        description: item.description || item.desc || `${cleanName} freshly sourced and prepared with care.`,
+        name: item.name || `Flower #${item.id}`,
+        description: item.description || "Freshly sourced and prepared with care.",
         price: parsedPrice,
-        originalPrice: item.originalPrice || item.original_price || (parsedPrice > 0 ? parsedPrice * 1.25 : null),
-        rating: item.rating || 4.8,
-        reviewsCount: item.reviewsCount || item.reviews_count || 10,
-        imageUrl: cleanImage
+        originalPrice: parsedOrigPrice,
+        rating: item.rating || 5,
+        reviewsCount: item.reviewsCount || 10,
+        imageUrl: imgUrl
       };
     });
 
-    // Run initializers only after data is stored globally
+    // Render components on page load
     initShopPage();
     initWishlistPage();
     initCartPage();
@@ -554,6 +542,3 @@ async function loadFlowersFromDatabase() {
     }
   }
 }
-
-// Trigger data fetching on DOM load
-document.addEventListener('DOMContentLoaded', loadFlowersFromDatabase);
