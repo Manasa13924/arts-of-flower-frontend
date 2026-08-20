@@ -492,9 +492,10 @@ function initDashboardPage() {
 
 // ==========================================
 // 4. Central Data Fetching & Page Initializer
-// ==========================================
 async function loadFlowersFromDatabase() {
+  const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=10";
   const grid = document.getElementById('shop-grid');
+  
   if (grid) {
     grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 2rem;">Loading blooms from database...</p>`;
   }
@@ -504,41 +505,39 @@ async function loadFlowersFromDatabase() {
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
     const data = await response.json();
+    
+    // Extract array safely from Spring Data Pagination object (data.content)
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
     window.flowerCatalog = rawList.map(item => {
-      // Extract image directly from backend 'image' key or fallback
-      let imgUrl = item.image || item.imageUrl || DEFAULT_FLOWER_IMG;
-      
-      let parsedPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
-      let parsedOrigPrice = typeof item.originalPrice === 'number' ? item.originalPrice : parseFloat(item.originalPrice) || null;
+      // Clean and standardize image URL (convert http to https to avoid mixed-content blocks)
+      let rawImg = item.image || item.imageUrl || '';
+      if (rawImg.startsWith("http://")) {
+        rawImg = rawImg.replace("http://", "https://");
+      }
 
       return {
         ...item,
         id: item.id,
         name: item.name || `Flower #${item.id}`,
         description: item.description || "Freshly sourced and prepared with care.",
-        price: parsedPrice,
-        originalPrice: parsedOrigPrice,
+        price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
+        originalPrice: item.originalPrice ? parseFloat(item.originalPrice) : null,
         rating: item.rating || 5,
         reviewsCount: item.reviewsCount || 10,
-        imageUrl: imgUrl
+        image: rawImg || "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600"
       };
     });
 
-    // Render components on page load
-    initShopPage();
-    initWishlistPage();
-    initCartPage();
-    initCheckoutPage();
-    initDashboardPage();
-    updateBadges();
-    updateHomeWishlistHearts();
+    // Trigger rendering pipeline
+    if (typeof initShopPage === 'function') initShopPage();
 
   } catch (error) {
     console.error("Error loading flower database:", error);
     if (grid) {
-      grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to load blooms. Please refresh.</p>`;
+      grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; color:red; padding: 2rem;">Unable to connect to flower server. Please try again.</p>`;
     }
   }
 }
+
+document.addEventListener('DOMContentLoaded', loadFlowersFromDatabase);
