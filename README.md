@@ -1,40 +1,46 @@
-# 🌸 ARTs of flower Analytics Dashboard
+# 🌸 ARTS OF FLOWERS - Full-Stack E-Commerce Web Application
 
-An interactive, responsive web application built to help local floriculture vendors manage inventory, monitor sales performance
----
-## 🚀 Live Demo
-[View Live Application](https://Manasa13924.github.io/arts-of-flower-frontend/)
+An elegant, interactive e-commerce platform for ordering fresh flowers and bouquets. Built with a dynamic front-end that connects seamlessly to a Spring Boot backend API with automatic cloud deployment.
 
 ---
 
-## 📊 Overview & Key Features
+## ✨ Features
 
-The **ARTs of flower Analytics Dashboard** combines dynamic data integration with clean modern UI design.
-
-### Key Features:
-- **Asynchronous Data Loading:** Reads product information dynamically from a static `data.json` dataset using the JavaScript Fetch API.
-- **Dynamic KPI Recalculation:** Automatically computes and displays **Total Products**, **Total Units Sold**, **Average Price**, and **Total Revenue** in real time as user search/filter criteria change.
-- **Debounced Live Search:** Filters products by flower name (*e.g., Mysore Mallige, Kanakambara, Dasavala, Kakada*) with a 200ms debounce buffer to ensure smooth DOM updates.
-- **Multi-Attribute Sorting:** Reorders the product grid by Name (A–Z), Price (Low to High / High to Low), Sales Volume, or Available Stock.
-- **Responsive CSS Grid Layout:** Adapts smoothly across mobile, tablet, and desktop viewports.
-- **Performance & Resilience:** Includes `loading="lazy"` tags on image elements and an automated `onerror` fallback listener to handle broken image URLs gracefully.
+* **Dynamic Product Catalog:** Loads flowers directly from a RESTful API with pagination and fallback configurations.
+* **Interactive Modal View:** Detailed pop-up view for every flower including ratings, reviews, descriptions, and quick purchase actions.
+* **Shopping Cart & Checkout:** Real-time cart management with quantity adjustments, subtotal calculations, and purchase processing.
+* **Wishlist Management:** Persistent heart toggles that save favorite flowers locally and auto-clean outdated entries.
+* **Past Purchases History:** Keeps track of previous customer orders and allows quick re-ordering directly from the cart page.
+* **Store Analytics Dashboard:** Dynamic sales reporting and stock inventory overview calculated from real-time order data.
+* **Automated CI/CD:** Integrated GitHub Actions workflow for automatic deployment to GitHub Pages upon pushing to `main`.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend Layout:** HTML5 (Semantic Structure)
-- **Styling & Layout:** CSS3 (Custom CSS Variables, Flexbox, CSS Grid)
-- **Logic & Functionality:** JavaScript (ES6+, Fetch API, Promises, Event Handling)
-- **Dataset:** JSON (`data.json`)
+* **Frontend:** HTML5, CSS3, JavaScript (ES6+), FontAwesome / Google Fonts (`Playfair Display`, `Poppins`)
+* **Backend:** Spring Boot REST API hosted on Render
+* **Database & Persistence:** Web `localStorage` API for state persistence and dynamic API payload processing
+* **Deployment:** GitHub Pages (Frontend) via GitHub Actions Workflow
 
 ---
 
-## 📁 Repository Structure
+## 🚀 Live Demo & API Link
+
+* **Live Frontend:** [ARTS OF FLOWERS on GitHub Pages](https://manasa13924.github.io/arts-of-flower-frontend/shop.html)
+* **Backend API:** `https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100`
+
+---
+
+## 📂 Project Structure
 
 ```text
-├── index.html        # Main HTML dashboard structure & semantic markup
-├── style.css         # Responsive styling, color themes & CSS Grid layout
-├── script.js        # JavaScript runtime logic (Fetch API, search, filter, KPIs)
-├── data.json         # Static dataset containing 35 local flower records
-└── README.md         # Project documentation and summary
+arts-of-flower-frontend/
+├── index.html        # Home / Landing page
+├── shop.html         # Main product catalog page
+├── wishlist.html     # Saved favorite flowers page
+├── cart.html         # Shopping cart & purchase history page
+├── checkout.html     # Order checkout & summary page
+├── dashboard.html    # Inventory & sales analytics page
+├── flower.js         # Central JavaScript logic & API integration
+└── style.css         # Main stylesheet
