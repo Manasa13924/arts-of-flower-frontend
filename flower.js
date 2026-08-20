@@ -441,24 +441,34 @@ function processOrder(e) {
 }
 
 // --- Dashboard Page ---
+// --- Dashboard Page ---
 function initDashboardPage() {
   const tableBody = document.getElementById('table-body');
   if (!tableBody) return;
 
   const catalog = getCatalog();
+  
+  if (!catalog || catalog.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No inventory data available.</td></tr>`;
+    return;
+  }
+
   const orderHistory = getOrderHistory();
 
+  // Map quantity sold per product from purchase history
   const salesMap = {};
   orderHistory.forEach(order => {
-    const qty = Number(order.quantity) || 0;
-    salesMap[order.id] = (salesMap[order.id] || 0) + qty;
+    if (order && order.id) {
+      const qty = Number(order.quantity) || 0;
+      salesMap[order.id] = (salesMap[order.id] || 0) + qty;
+    }
   });
 
   let totalRev = 0;
   let totalUnits = 0;
 
   tableBody.innerHTML = catalog.map(f => {
-    const stock = f.reviewsCount ?? f.reviews_count ?? f.stock ?? 0;
+    const stock = f.reviewsCount ?? f.reviews_count ?? f.stock ?? 10;
     const dynamicSales = (salesMap[f.id] || 0) + (f.totalSales || f.sales || 0);
     const price = Number(f.price) || 0;
     const rev = price * dynamicSales;
@@ -468,8 +478,8 @@ function initDashboardPage() {
 
     return `
       <tr>
-        <td>${f.name}</td>
-        <td>${f.category || 'N/A'}</td>
+        <td><strong>${f.name}</strong></td>
+        <td>${f.category || 'General'}</td>
         <td>₹${price.toFixed(2)}</td>
         <td>${stock} units</td>
         <td>${dynamicSales}</td>
@@ -477,6 +487,7 @@ function initDashboardPage() {
     `;
   }).join('');
 
+  // Update KPI Cards
   const revEl = document.getElementById('total-revenue');
   const unitsEl = document.getElementById('units-sold');
   const avgEl = document.getElementById('avg-price');
@@ -489,11 +500,11 @@ function initDashboardPage() {
   if (unitsEl) unitsEl.textContent = totalUnits;
   if (avgEl) avgEl.textContent = `₹${avgPrice.toFixed(2)}`;
 }
-
 // ==========================================
 // 4. Central Data Fetching & Page Initializer
+// ==========================================
 async function loadFlowersFromDatabase() {
-  const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=10";
+  const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100";
   const grid = document.getElementById('shop-grid');
   
   if (grid) {
@@ -505,12 +516,9 @@ async function loadFlowersFromDatabase() {
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
     const data = await response.json();
-    
-    // Extract array safely from Spring Data Pagination object (data.content)
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
     window.flowerCatalog = rawList.map(item => {
-      // Clean and standardize image URL (convert http to https to avoid mixed-content blocks)
       let rawImg = item.image || item.imageUrl || '';
       if (rawImg.startsWith("http://")) {
         rawImg = rawImg.replace("http://", "https://");
@@ -525,12 +533,18 @@ async function loadFlowersFromDatabase() {
         originalPrice: item.originalPrice ? parseFloat(item.originalPrice) : null,
         rating: item.rating || 5,
         reviewsCount: item.reviewsCount || 10,
-        image: rawImg || "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600"
+        image: rawImg || DEFAULT_FLOWER_IMG
       };
     });
 
-    // Trigger rendering pipeline
+    // Execute page initializers based on current active DOM elements
+    updateBadges();
+    updateHomeWishlistHearts();
     if (typeof initShopPage === 'function') initShopPage();
+    if (typeof initWishlistPage === 'function') initWishlistPage();
+    if (typeof initCartPage === 'function') initCartPage();
+    if (typeof initCheckoutPage === 'function') initCheckoutPage();
+    if (typeof initDashboardPage === 'function') initDashboardPage();
 
   } catch (error) {
     console.error("Error loading flower database:", error);
