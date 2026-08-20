@@ -143,14 +143,25 @@ function updateHomeWishlistHearts() {
     }
   });
 }
-
 // ==========================================
 // 2. Product Information Modal
 // ==========================================
-function openProductModal(flowerId) {
+function openProductModal(flowerIdentifier) {
   const catalog = getCatalog();
-  const flower = catalog.find(f => f.id === flowerId);
-  if (!flower) return;
+  const history = getOrderHistory();
+  
+  // Try finding in catalog by ID (number or string) or by exact Name
+  let flower = catalog.find(f => f.id == flowerIdentifier || f.name === flowerIdentifier);
+  
+  // If not found in live catalog, look inside past order history
+  if (!flower) {
+    flower = history.find(h => h.id == flowerIdentifier || h.name === flowerIdentifier);
+  }
+
+  if (!flower) {
+    alert("Sorry, detailed info for this item is currently unavailable.");
+    return;
+  }
 
   let modal = document.getElementById('product-modal');
   if (!modal) {
@@ -160,7 +171,7 @@ function openProductModal(flowerId) {
     document.body.appendChild(modal);
   }
 
-  const priceVal = typeof flower.price === 'number' ? flower.price.toFixed(2) : flower.price;
+  const priceVal = typeof flower.price === 'number' ? flower.price.toFixed(2) : parseFloat(flower.price) || '0.00';
   const imgUrl = getValidImageUrl(flower);
   const descriptionText = flower.description || flower.desc || 'Freshly handpicked blooms prepared with care. Perfect for gifts, occasions, or adding a vibrant touch to your space.';
 
@@ -175,13 +186,14 @@ function openProductModal(flowerId) {
         <p style="color:#666; font-size:0.95rem; margin-bottom:1.5rem; line-height:1.6;">
           ${descriptionText}
         </p>
-        <button class="btn-primary" onclick="handleAddToCart(${flower.id}); closeProductModal();">Add to Cart</button>
+        <button class="btn-primary" onclick="handleAddToCart('${flower.id}'); closeProductModal();">Add to Cart</button>
       </div>
     </div>
   `;
 
   setTimeout(() => modal.classList.add('active'), 10);
 }
+
 
 function closeProductModal() {
   const modal = document.getElementById('product-modal');
@@ -364,13 +376,13 @@ function initCartPage() {
             ${history.map(item => `
               <li style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom: none;">
                 <span 
-                  onclick="openProductModal(${item.id})" 
-                  style="cursor:pointer; color:#333333; font-weight:600; text-decoration:none;"
-                  onmouseover="this.style.color='#ba6870'"
-                  onmouseout="this.style.color='#333333'"
-                  title="Click to view details">
-                  ${item.name}
-                </span>
+  onclick="openProductModal('${item.name.replace(/'/g, "\\'")}')" 
+  style="cursor:pointer; color:#333333; font-weight:600; text-decoration:none;"
+  onmouseover="this.style.color='#ba6870'"
+  onmouseout="this.style.color='#333333'"
+  title="Click to view details">
+  ${item.name}
+</span>
                 <span style="color: #666; font-size: 0.9rem;">Qty: ${item.quantity} | Total: ₹${(item.price * item.quantity).toFixed(2)}</span>
               </li>
             `).join('')}
