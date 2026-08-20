@@ -287,18 +287,22 @@ function initShopPage() {
     });
   }
 }
-
-// --- Wishlist Page ---
 function initWishlistPage() {
   const grid = document.getElementById('wishlist-grid');
   if (!grid) return;
 
   const wishlistIds = getWishlist();
   const catalog = getCatalog();
+
+  if (!wishlistIds || wishlistIds.length === 0) {
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Your wishlist is currently empty. Click ❤️ on any flower in the shop to save it here!</p>`;
+    return;
+  }
+
   const wishlistedFlowers = catalog.filter(f => wishlistIds.includes(f.id));
 
   if (wishlistedFlowers.length === 0) {
-    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Your wishlist is currently empty. Click ❤️ on any flower to save it here!</p>`;
+    grid.innerHTML = `<p style="grid-column: 1 / -1; text-align:center; padding: 3rem;">Loading saved wishlist items...</p>`;
     return;
   }
 
@@ -319,6 +323,7 @@ function initWishlistPage() {
     `;
   }).join('');
 }
+// --- Wishlist Page ---
 
 // --- Cart Page ---
 function initCartPage() {
