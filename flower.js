@@ -9,10 +9,13 @@ function getCatalog() {
 let currentPage = 1;
 const itemsPerPage = 12;
 
-// Default image fallback if database image is missing or invalid
-const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300";
+// Default high-quality fallback image
+const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&auto=format&fit=crop&q=80";
 
-// Corrected Image URL Helper Function
+/**
+ * Robust Image URL Resolver
+ * Handles full URLs, relative paths, plain DB IDs, and generates relevant flower images.
+ */
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
   
@@ -21,25 +24,23 @@ function getValidImageUrl(item) {
   if (rawImg !== null && rawImg !== undefined) {
     let strImg = String(rawImg).trim();
 
-    // 1. Direct Web URLs
+    // 1. Full Web URL (http/https)
     if (strImg.startsWith("http://") || strImg.startsWith("https://")) {
       return strImg;
     }
-    // 2. Relative paths
+
+    // 2. Relative file path or file extension provided
     if (strImg.startsWith("/") || strImg.startsWith("./")) {
       return strImg;
     }
-    // 3. Filenames with extensions in local images folder
     if (strImg.includes(".")) {
       return `./images/${strImg}`;
     }
-    // 4. Handle numeric IDs or names missing extensions by checking local JPG/PNG path
-    if (strImg !== "" && strImg !== "null" && strImg !== "undefined") {
-      return `./images/${strImg}.jpg`;
-    }
   }
 
-  return DEFAULT_FLOWER_IMG;
+  // 3. Fallback for DB numeric IDs or missing images: generate unique flower image via ID seed
+  const flowerId = item.id || Math.floor(Math.random() * 1000) + 1;
+  return `https://picsum.photos/seed/flower_db_${flowerId}/500/500`;
 }
 
 function getCart() { 
@@ -158,6 +159,7 @@ function openProductModal(flowerId) {
 
   const priceVal = typeof flower.price === 'number' ? flower.price.toFixed(2) : flower.price;
   const imgUrl = getValidImageUrl(flower);
+  const descriptionText = flower.description || flower.desc || 'Freshly handpicked blooms prepared with care. Perfect for gifts, occasions, or adding a vibrant touch to your space.';
 
   modal.innerHTML = `
     <div class="modal-content">
@@ -168,7 +170,7 @@ function openProductModal(flowerId) {
         <p style="color:#f39c12; margin-bottom:0.8rem;">⭐ ${flower.rating || 5} (${flower.reviewsCount || 10} reviews)</p>
         <p style="font-size:1.3rem; font-weight:600; color:#ba6870; margin-bottom:1rem;">₹${priceVal}</p>
         <p style="color:#666; font-size:0.95rem; margin-bottom:1.5rem; line-height:1.6;">
-          ${flower.description || 'Freshly handpicked blooms prepared with care. Perfect for gifts, occasions, or adding a vibrant touch to your home.'}
+          ${descriptionText}
         </p>
         <button class="btn-primary" onclick="handleAddToCart(${flower.id}); closeProductModal();">Add to Cart</button>
       </div>
@@ -503,6 +505,9 @@ function initDashboardPage() {
 // ==========================================
 // 4. API Fetching & Initializer
 // ==========================================
+// ==========================================
+// 4. API Fetching & Initializer (UPDATED)
+// ==========================================
 async function loadFlowersFromDatabase() {
   const grid = document.getElementById('shop-grid');
   if (grid) {
@@ -516,15 +521,36 @@ async function loadFlowersFromDatabase() {
     const data = await response.json();
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
-    window.flowerCatalog = rawList.map(item => ({
-      ...item,
-      id: item.id,
-      name: item.name || `Flower #${item.id}`,
-      price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
-      imageUrl: item.imageUrl || item.image || item.image_url || item.img || item.photo
-    }));
+    window.flowerCatalog = rawList.map(item => {
+      // 1. Clean Name (handle cases where name contains numeric string or is missing)
+      let cleanName = item.name;
+      if (!cleanName || !isNaN(cleanName)) {
+        cleanName = item.category || `Flower #${item.id}`;
+      }
 
-    // Trigger page renders ONCE catalog data is loaded into memory
+      // 2. Extract price safely
+      let parsedPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+
+      // 3. Extract Image safely without breaking with Unsplash URL string
+      let rawImage = item.image || item.imageUrl || item.image_url || item.img;
+      let finalImg = (rawImage && String(rawImage).startsWith('http')) 
+        ? String(rawImage).trim() 
+        : getValidImageUrl(item);
+
+      return {
+        ...item,
+        id: item.id,
+        name: cleanName,
+        description: item.description || item.desc || `${cleanName} freshly sourced and prepared with care.`,
+        price: parsedPrice,
+        originalPrice: item.originalPrice || item.original_price || (parsedPrice * 1.25),
+        rating: item.rating || 4.8,
+        reviewsCount: item.reviewsCount || item.reviews_count || 10,
+        imageUrl: finalImg
+      };
+    });
+
+    // Render components
     initShopPage();
     initWishlistPage();
     initCartPage();
@@ -539,8 +565,3 @@ async function loadFlowersFromDatabase() {
     }
   }
 }
-
-// Auto-run on DOM Ready
-document.addEventListener("DOMContentLoaded", () => {
-  loadFlowersFromDatabase();
-});
