@@ -1,20 +1,19 @@
 // ==========================================
-// 1. API Configuration & State Management
+// 1. API & Global State Configuration
 // ==========================================
+const API_URL = "https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100";
+const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&auto=format&fit=crop&q=80";
 
-// Safe Catalog Access Helper
-function getCatalog() {
-  return window.flowerCatalog || [];
-}
+window.flowerCatalog = [];
 let currentPage = 1;
 const itemsPerPage = 12;
 
-// Default high-quality fallback image
-const DEFAULT_FLOWER_IMG = "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&auto=format&fit=crop&q=80";
+function getCatalog() {
+  return window.flowerCatalog || [];
+}
 
 /**
- * Robust Image URL Resolver
- * Handles full URLs, relative paths, plain DB IDs, and generates relevant flower images.
+ * Image URL Resolver
  */
 function getValidImageUrl(item) {
   if (!item) return DEFAULT_FLOWER_IMG;
@@ -24,12 +23,9 @@ function getValidImageUrl(item) {
   if (rawImg !== null && rawImg !== undefined) {
     let strImg = String(rawImg).trim();
 
-    // 1. Full Web URL (http/https)
     if (strImg.startsWith("http://") || strImg.startsWith("https://")) {
       return strImg;
     }
-
-    // 2. Relative file path or file extension provided
     if (strImg.startsWith("/") || strImg.startsWith("./")) {
       return strImg;
     }
@@ -38,11 +34,11 @@ function getValidImageUrl(item) {
     }
   }
 
-  // 3. Fallback for DB numeric IDs or missing images: generate unique flower image via ID seed
   const flowerId = item.id || Math.floor(Math.random() * 1000) + 1;
   return `https://picsum.photos/seed/flower_db_${flowerId}/500/500`;
 }
 
+// Storage Helpers
 function getCart() { 
   return JSON.parse(localStorage.getItem('flower_cart')) || []; 
 }
@@ -65,7 +61,7 @@ function getOrderHistory() {
   return JSON.parse(localStorage.getItem('flower_order_history')) || [];
 }
 
-// Add to Cart with "Proceed to Payment?" Prompt
+// Action Handlers
 function handleAddToCart(flowerId, event) {
   if (event) event.stopPropagation(); 
   
@@ -142,7 +138,7 @@ function updateHomeWishlistHearts() {
 }
 
 // ==========================================
-// 2. Detailed Flower Info Modal
+// 2. Product Information Modal
 // ==========================================
 function openProductModal(flowerId) {
   const catalog = getCatalog();
@@ -503,10 +499,7 @@ function initDashboardPage() {
 }
 
 // ==========================================
-// 4. API Fetching & Initializer
-// ==========================================
-// ==========================================
-// 4. API Fetching & Initializer (UPDATED)
+// 4. Central Data Fetching & Page Initializer
 // ==========================================
 async function loadFlowersFromDatabase() {
   const grid = document.getElementById('shop-grid');
@@ -515,27 +508,22 @@ async function loadFlowersFromDatabase() {
   }
 
   try {
-    const response = await fetch("https://arts-of-flower-backend.onrender.com/api/products?page=0&size=100");
-    if (!response.ok) throw new Error("Failed to fetch products");
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
     const data = await response.json();
     const rawList = Array.isArray(data) ? data : (data.content || []);
 
     window.flowerCatalog = rawList.map(item => {
-      // 1. Clean Name (handle cases where name contains numeric string or is missing)
-      let cleanName = item.name;
-      if (!cleanName || !isNaN(cleanName)) {
-        cleanName = item.category || `Flower #${item.id}`;
-      }
+      // 1. Sanitize product name
+      const nameVal = String(item.name || "").trim();
+      const cleanName = (!nameVal || !isNaN(nameVal)) ? (item.category || `Flower #${item.id || item.price}`) : nameVal;
 
-      // 2. Extract price safely
+      // 2. Parse price
       let parsedPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
 
-      // 3. Extract Image safely without breaking with Unsplash URL string
-      let rawImage = item.image || item.imageUrl || item.image_url || item.img;
-      let finalImg = (rawImage && String(rawImage).startsWith('http')) 
-        ? String(rawImage).trim() 
-        : getValidImageUrl(item);
+      // 3. Resolve Image URL
+      let cleanImage = getValidImageUrl(item);
 
       return {
         ...item,
@@ -543,14 +531,14 @@ async function loadFlowersFromDatabase() {
         name: cleanName,
         description: item.description || item.desc || `${cleanName} freshly sourced and prepared with care.`,
         price: parsedPrice,
-        originalPrice: item.originalPrice || item.original_price || (parsedPrice * 1.25),
+        originalPrice: item.originalPrice || item.original_price || (parsedPrice > 0 ? parsedPrice * 1.25 : null),
         rating: item.rating || 4.8,
         reviewsCount: item.reviewsCount || item.reviews_count || 10,
-        imageUrl: finalImg
+        imageUrl: cleanImage
       };
     });
 
-    // Render components
+    // Run initializers only after data is stored globally
     initShopPage();
     initWishlistPage();
     initCartPage();
@@ -558,6 +546,7 @@ async function loadFlowersFromDatabase() {
     initDashboardPage();
     updateBadges();
     updateHomeWishlistHearts();
+
   } catch (error) {
     console.error("Error loading flower database:", error);
     if (grid) {
@@ -565,3 +554,6 @@ async function loadFlowersFromDatabase() {
     }
   }
 }
+
+// Trigger data fetching on DOM load
+document.addEventListener('DOMContentLoaded', loadFlowersFromDatabase);
